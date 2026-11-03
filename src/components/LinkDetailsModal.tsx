@@ -50,7 +50,7 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
   const [copiedOriginal, setCopiedOriginal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [useDevUrl, setUseDevUrl] = useState(false);
-  const [urlFormat, setUrlFormat] = useState<'domain_short' | 'slug_short' | 'portable'>('domain_short');
+  const [urlFormat, setUrlFormat] = useState<'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable'>('path_ultra_short');
 
   useEffect(() => {
     if (link) {
@@ -188,25 +188,36 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
               <span className="text-slate-400 text-[11px] font-medium mr-1">Format Tautan:</span>
               <button
                 type="button"
-                onClick={() => setUrlFormat('domain_short')}
+                onClick={() => setUrlFormat('path_ultra_short')}
                 className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
-                  urlFormat === 'domain_short'
+                  urlFormat === 'path_ultra_short'
                     ? 'bg-emerald-600 border-emerald-500 text-white font-bold'
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                ⚡ Domain Short (Rekomendasi)
+                ⚡ Path Direct Ultra Short (siberes-ngk)
               </button>
               <button
                 type="button"
-                onClick={() => setUrlFormat('slug_short')}
+                onClick={() => setUrlFormat('hash_ultra_short')}
                 className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
-                  urlFormat === 'slug_short'
+                  urlFormat === 'hash_ultra_short'
                     ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                🚀 Short Slug (Super Pendek)
+                🚀 Hash Short (#/siberes-ngk)
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlFormat('domain_short')}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                  urlFormat === 'domain_short'
+                    ? 'bg-slate-800 border-slate-600 text-white font-bold'
+                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                🌐 Domain Virtual Format
               </button>
               <button
                 type="button"

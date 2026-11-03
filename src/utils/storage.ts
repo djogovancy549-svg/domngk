@@ -265,31 +265,35 @@ export function getDevAppOrigin(): string {
   return window.location.origin;
 }
 
-export type LinkUrlFormat = 'domain_short' | 'slug_short' | 'portable';
+export type LinkUrlFormat = 'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable';
 
 /**
  * Builds the real shareable app link.
- * Defaults to clean, ultra-short URLs without long parameters!
+ * Defaults to ultra-short direct path URLs (e.g. https://domain.workers.dev/siberes-ngk)
  */
 export function buildShareableUrl(
   link: CloakedLink, 
   useDevOrigin: boolean = false,
-  format: LinkUrlFormat = 'domain_short'
+  format: LinkUrlFormat = 'path_ultra_short'
 ): string {
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
-  const pathname = window.location.pathname;
+  const cleanSlug = encodeURIComponent(link.slug);
 
-  if (format === 'slug_short') {
-    return `${baseOrigin}${pathname}#/s/${encodeURIComponent(link.slug)}`;
+  if (format === 'path_ultra_short') {
+    return `${baseOrigin}/${cleanSlug}`;
+  }
+
+  if (format === 'hash_ultra_short') {
+    return `${baseOrigin}/#/${cleanSlug}`;
   }
 
   if (format === 'portable') {
     const token = encodeLinkToToken(link);
-    return `${baseOrigin}${pathname}#/v/${encodeURIComponent(link.virtualDomain)}/${encodeURIComponent(link.slug)}?p=${token}`;
+    return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}?p=${token}`;
   }
 
-  // Default: domain_short (Clean, ultra-short URL: https://.../#/v/domain/slug)
-  return `${baseOrigin}${pathname}#/v/${encodeURIComponent(link.virtualDomain)}/${encodeURIComponent(link.slug)}`;
+  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug)
+  return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}`;
 }
 
 /**

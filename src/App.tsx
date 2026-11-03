@@ -70,7 +70,7 @@ export default function App() {
   useEffect(() => {
     getInitialLinks().then((initial) => {
       setLinks(initial);
-      checkHashRoute(initial);
+      checkAppRoute(initial);
     });
 
     setClients(getInitialClients());
@@ -97,69 +97,114 @@ export default function App() {
     };
   }, []);
 
-  // 2. Hash routing detector: e.g. #/s/:slug, #/v/:domain/:slug, or #/v/:domain/:slug?p=:token
-  const checkHashRoute = (currentLinks: CloakedLink[]) => {
+  // 2. Full routing detector: supports direct path routes (/siberes-ngk), hash routes (#/siberes-ngk), and portable tokens
+  const checkAppRoute = (currentLinks: CloakedLink[]) => {
+    const pathname = window.location.pathname;
     const hash = window.location.hash;
-    if (hash.startsWith('#/v/') || hash.startsWith('#/s/')) {
-      const isShortSlugRoute = hash.startsWith('#/s/');
-      const rawPath = isShortSlugRoute ? hash.replace('#/s/', '') : hash.replace('#/v/', '');
-      const [pathPart, queryPart] = rawPath.split('?');
-      const parts = pathPart.split('/').map((p) => decodeURIComponent(p));
+    const search = window.location.search;
 
-      let domain = '';
-      let slug = '';
+    let targetLink: CloakedLink | undefined;
+    let tokenFromQuery: string | null = null;
 
-      if (isShortSlugRoute) {
-        slug = parts[0] || '';
-      } else {
-        if (parts.length >= 2) {
-          domain = parts[0] || '';
-          slug = parts[1] || '';
-        } else {
-          slug = parts[0] || '';
-        }
-      }
+    if (search) {
+      const qParams = new URLSearchParams(search);
+      tokenFromQuery = qParams.get('p') || qParams.get('d');
+    }
 
-      // Check if portable token exists in query string
-      let tokenFromQuery: string | null = null;
-      if (queryPart) {
-        const qParams = new URLSearchParams(queryPart);
+    // A. Check Hash Routing (e.g. #/siberes-ngk, #/v/domain/slug, #/s/slug)
+    if (hash && hash !== '#' && hash !== '#/') {
+      const cleanHash = hash.replace(/^#\/?/, '');
+      const [hashPath, hashQuery] = cleanHash.split('?');
+      if (hashQuery && !tokenFromQuery) {
+        const qParams = new URLSearchParams(hashQuery);
         tokenFromQuery = qParams.get('p') || qParams.get('d');
       }
 
-      // 1. Try finding in current stored links
-      let targetLink = currentLinks.find((l) => {
-        if (slug && domain) {
-          return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
-        }
-        if (slug) {
-          return l.slug.toLowerCase() === slug.toLowerCase() || l.id.toLowerCase() === slug.toLowerCase();
-        }
-        return false;
-      });
-
-      // 2. If not found in local memory, decode from portable token if present!
-      if (!targetLink && tokenFromQuery) {
-        const decoded = decodeTokenToLink(tokenFromQuery);
-        if (decoded) {
-          targetLink = decoded;
-          // Cache it so it appears in recent session
-          setLinks((prev) => [decoded, ...prev.filter((p) => p.id !== decoded.id)]);
-        }
+      let parts = hashPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
+      if (parts[0] === 'v' || parts[0] === 's') {
+        parts = parts.slice(1);
       }
 
-      if (targetLink) {
-        setActiveGatewayLink(targetLink);
+      let domain = '';
+      let slug = '';
+      if (parts.length >= 2) {
+        domain = parts[0];
+        slug = parts[1];
+      } else if (parts.length === 1) {
+        slug = parts[0];
       }
+
+      if (slug || domain) {
+        targetLink = currentLinks.find((l) => {
+          if (slug && domain) {
+            return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
+          }
+          if (slug) {
+            return (
+              l.slug.toLowerCase() === slug.toLowerCase() ||
+              l.virtualDomain.toLowerCase() === slug.toLowerCase() ||
+              l.id.toLowerCase() === slug.toLowerCase()
+            );
+          }
+          return false;
+        });
+      }
+    }
+
+    // B. Check Direct Path Routing (e.g. /siberes-ngk or /sec-6j2rmuv or /siberes.ngk)
+    if (!targetLink && pathname && pathname !== '/' && !pathname.includes('.')) {
+      const cleanPath = pathname.replace(/^\/+/, '');
+      const parts = cleanPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
+      let domain = '';
+      let slug = '';
+      if (parts.length >= 2) {
+        domain = parts[0];
+        slug = parts[1];
+      } else if (parts.length === 1) {
+        slug = parts[0];
+      }
+
+      if (slug || domain) {
+        targetLink = currentLinks.find((l) => {
+          if (slug && domain) {
+            return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
+          }
+          if (slug) {
+            return (
+              l.slug.toLowerCase() === slug.toLowerCase() ||
+              l.virtualDomain.toLowerCase() === slug.toLowerCase() ||
+              l.id.toLowerCase() === slug.toLowerCase()
+            );
+          }
+          return false;
+        });
+      }
+    }
+
+    // C. Decode portable token if present
+    if (!targetLink && tokenFromQuery) {
+      const decoded = decodeTokenToLink(tokenFromQuery);
+      if (decoded) {
+        targetLink = decoded;
+        setLinks((prev) => [decoded, ...prev.filter((p) => p.id !== decoded.id)]);
+      }
+    }
+
+    if (targetLink) {
+      setActiveGatewayLink(targetLink);
     }
   };
 
   useEffect(() => {
-    const handleHashChange = () => {
-      checkHashRoute(links);
+    const handleLocationChange = () => {
+      checkAppRoute(links);
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
   }, [links]);
 
   // Handlers for Links
