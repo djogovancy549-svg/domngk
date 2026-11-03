@@ -220,17 +220,40 @@ export const KnowledgeGuide: React.FC = () => {
             </p>
           </div>
 
+          {/* Cloudflare Direct Upload (Zero Queue Instant) */}
+          <div className="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-lg space-y-2 mt-2">
+            <span className="font-semibold text-emerald-300 flex items-center gap-1.5 text-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Metode Instan 10 Detik: Cloudflare Pages "Direct Upload" (Tanpa Antre Git Sama Sekali)
+            </span>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              Jika antrean Cloudflare Workers Anda berulang kali <em>Queued</em> atau <em>Initializing</em>, Anda bisa langsung mendownload bundle aplikasi siap pakai ini dan mengunggahnya langsung ke Cloudflare Pages:
+            </p>
+            <div className="pt-1 flex flex-wrap gap-2">
+              <a
+                href="/dist.zip"
+                download="dist.zip"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg transition-colors shadow-sm"
+              >
+                <span>Unduh dist.zip (Siap Deploy)</span>
+              </a>
+            </div>
+            <p className="text-slate-400 text-[10px] leading-relaxed pt-1">
+              Cara pakai: Buka Cloudflare &gt; <em>Workers &amp; Pages</em> &gt; <em>Create application</em> &gt; Tab <strong>Pages</strong> &gt; Pilih <strong>Upload assets</strong> &gt; Seret file <code>dist.zip</code> atau folder dist &gt; Klik Deploy. Langsung 100% online tanpa menunggu build runner!
+            </p>
+          </div>
+
           {/* Cloudflare Troubleshooting: Initializing stuck */}
           <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-lg space-y-1.5 mt-2">
             <span className="font-semibold text-amber-300 flex items-center gap-1.5">
               <Zap className="w-4 h-4 text-amber-400" />
-              Solusi Jika Build Tertahan di "Initializing build environment..." (3+ Menit)
+              Penjelasan Mengapa Cloudflare Workers Muncul "Queued" &amp; "Traffic 0%"
             </span>
             <p className="text-slate-300 text-[11px] leading-relaxed">
-              Jika di Cloudflare muncul status <em>Build #... Initializing build environment</em> yang tidak jalan-jalan, itu karena Anda berada di menu <strong>Cloudflare Workers</strong> (yang menggunakan antrean container serverless lambat).
+              Di layar Cloudflare Workers Anda, status <em>Queued 5m</em> terjadi karena antrean runner serverless gratis Cloudflare sedang penuh. Selain itu, versi sebelumnya yang sudah <em>Ready</em> belum aktif karena slider <strong>Traffic %</strong> masih disetel <strong>0%</strong> (geser ke 100% untuk mengaktifkannya).
             </p>
             <p className="text-slate-300 text-[11px] leading-relaxed">
-              <strong>Solusinya:</strong> Klik tombol <strong>Cancel build</strong> di kanan atas, lalu buat lewat tab <strong>Pages</strong> (Workers &amp; Pages &gt; Create &gt; tab <strong>Pages</strong> &gt; Connect to Git). Cloudflare Pages khusus didesain untuk frontend Vite/React dan akan selesai hanya dalam 20–30 detik!
+              Untuk website frontend (React/Vite), gunakan selalu <strong>Cloudflare Pages</strong> (bukan Workers) agar tidak terkena sistem antrean ini.
             </p>
           </div>
         </div>
