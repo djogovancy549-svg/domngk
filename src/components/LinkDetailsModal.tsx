@@ -50,10 +50,11 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
   const [copiedOriginal, setCopiedOriginal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [useDevUrl, setUseDevUrl] = useState(false);
+  const [urlFormat, setUrlFormat] = useState<'domain_short' | 'slug_short' | 'portable'>('domain_short');
 
   useEffect(() => {
     if (link) {
-      const shareUrl = buildShareableUrl(link, useDevUrl);
+      const shareUrl = buildShareableUrl(link, useDevUrl, urlFormat);
       QRCode.toDataURL(shareUrl, {
         width: 300,
         margin: 2,
@@ -65,11 +66,11 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
         .then((url) => setQrCodeDataUrl(url))
         .catch((err) => console.error('QR generation error:', err));
     }
-  }, [link, useDevUrl]);
+  }, [link, useDevUrl, urlFormat]);
 
   if (!isOpen || !link) return null;
 
-  const shareableUrl = buildShareableUrl(link, useDevUrl);
+  const shareableUrl = buildShareableUrl(link, useDevUrl, urlFormat);
   const virtualDisplayUrl = buildVirtualDisplayUrl(link);
 
   const handleCopy = (text: string, type: 'share' | 'virtual' | 'original') => {
@@ -154,6 +155,9 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
                   Tautan Aktif Untuk Dibagikan ke Klien
                 </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  {shareableUrl.length} Karakter
+                </span>
               </div>
 
               {/* URL Mode Toggle: Public vs Dev */}
@@ -177,6 +181,44 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                   Tautan Dev Pribadi (ais-dev)
                 </button>
               </div>
+            </div>
+
+            {/* URL Format Selector Tabs */}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs pt-1">
+              <span className="text-slate-400 text-[11px] font-medium mr-1">Format Tautan:</span>
+              <button
+                type="button"
+                onClick={() => setUrlFormat('domain_short')}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                  urlFormat === 'domain_short'
+                    ? 'bg-emerald-600 border-emerald-500 text-white font-bold'
+                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                ⚡ Domain Short (Rekomendasi)
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlFormat('slug_short')}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                  urlFormat === 'slug_short'
+                    ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
+                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                🚀 Short Slug (Super Pendek)
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlFormat('portable')}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                  urlFormat === 'portable'
+                    ? 'bg-amber-600 border-amber-500 text-white font-bold'
+                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                🔑 Portabel Standalone
+              </button>
             </div>
 
             <div className="p-3 bg-slate-950 border border-slate-700 rounded-lg font-mono text-xs text-emerald-300 select-all break-all shadow-inner">

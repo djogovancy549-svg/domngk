@@ -97,15 +97,28 @@ export default function App() {
     };
   }, []);
 
-  // 2. Hash routing detector: e.g. #/v/:domain/:slug?p=:token
+  // 2. Hash routing detector: e.g. #/s/:slug, #/v/:domain/:slug, or #/v/:domain/:slug?p=:token
   const checkHashRoute = (currentLinks: CloakedLink[]) => {
     const hash = window.location.hash;
-    if (hash.startsWith('#/v/')) {
-      const pathAndQuery = hash.replace('#/v/', '');
-      const [pathPart, queryPart] = pathAndQuery.split('?');
-      const parts = pathPart.split('/');
-      const domain = parts[0] ? decodeURIComponent(parts[0]) : '';
-      const slug = parts[1] ? decodeURIComponent(parts[1]) : '';
+    if (hash.startsWith('#/v/') || hash.startsWith('#/s/')) {
+      const isShortSlugRoute = hash.startsWith('#/s/');
+      const rawPath = isShortSlugRoute ? hash.replace('#/s/', '') : hash.replace('#/v/', '');
+      const [pathPart, queryPart] = rawPath.split('?');
+      const parts = pathPart.split('/').map((p) => decodeURIComponent(p));
+
+      let domain = '';
+      let slug = '';
+
+      if (isShortSlugRoute) {
+        slug = parts[0] || '';
+      } else {
+        if (parts.length >= 2) {
+          domain = parts[0] || '';
+          slug = parts[1] || '';
+        } else {
+          slug = parts[0] || '';
+        }
+      }
 
       // Check if portable token exists in query string
       let tokenFromQuery: string | null = null;
@@ -115,11 +128,17 @@ export default function App() {
       }
 
       // 1. Try finding in current stored links
-      let targetLink = currentLinks.find(
-        (l) => l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase()
-      );
+      let targetLink = currentLinks.find((l) => {
+        if (slug && domain) {
+          return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
+        }
+        if (slug) {
+          return l.slug.toLowerCase() === slug.toLowerCase() || l.id.toLowerCase() === slug.toLowerCase();
+        }
+        return false;
+      });
 
-      // 2. If not found in local memory (e.g. opened from another email or device!), decode from portable token!
+      // 2. If not found in local memory, decode from portable token if present!
       if (!targetLink && tokenFromQuery) {
         const decoded = decodeTokenToLink(tokenFromQuery);
         if (decoded) {

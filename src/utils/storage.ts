@@ -131,39 +131,32 @@ export function saveLinks(links: CloakedLink[]): void {
 }
 
 export interface PortableLinkPayload {
-  i: string; // id
-  t: string; // title
   u: string; // cleaned url
   d: string; // virtual domain
   s: string; // slug
-  m: string; // maskMode
+  m?: string; // maskMode
   p?: string; // pinHash (if enabled)
   e?: number; // expiresAt
   b?: boolean; // burnAfterRead
   c?: number; // maxClicks
-  tr?: boolean; // stripTrackers
-  sc?: number; // security score
+  t?: string; // optional short title
 }
 
 /**
- * Encodes a cloaked link into a URL-safe portable token.
- * This guarantees the link can be opened on ANY computer, ANY email, and ANY device
- * without needing shared localStorage or backend database lookup!
+ * Encodes a cloaked link into a compact, URL-safe portable token.
+ * Optimized to be lightweight so links remain as short as possible.
  */
 export function encodeLinkToToken(link: CloakedLink): string {
   const payload: PortableLinkPayload = {
-    i: link.id,
-    t: link.title,
     u: link.cleanedUrl,
     d: link.virtualDomain,
     s: link.slug,
-    m: link.maskMode,
+    m: link.maskMode !== 'sandbox' ? link.maskMode : undefined,
     p: link.pinProtection?.enabled ? link.pinProtection.pinHash : undefined,
     e: link.expiresAt || undefined,
     b: link.burnAfterRead || undefined,
     c: link.maxClicks || undefined,
-    tr: link.stripTrackers,
-    sc: link.securityReport?.score || 100,
+    t: link.title !== `Tautan Tersembunyi: ${link.virtualDomain}/${link.slug}` ? link.title : undefined,
   };
   const json = JSON.stringify(payload);
   return btoa(encodeURIComponent(json))
@@ -186,8 +179,8 @@ export function decodeTokenToLink(token: string): CloakedLink | null {
     if (!payload.u || !payload.d) return null;
 
     return {
-      id: payload.i || `clk_${Date.now().toString(36)}`,
-      title: payload.t || `Tautan Terproteksi: ${payload.d}/${payload.s}`,
+      id: `clk_${Date.now().toString(36)}`,
+      title: payload.t || `Tautan Terproteksi: ${payload.d}/${payload.s || 'link'}`,
       originalUrl: payload.u,
       cleanedUrl: payload.u,
       virtualDomain: payload.d,
@@ -202,12 +195,12 @@ export function decodeTokenToLink(token: string): CloakedLink | null {
       maxClicks: payload.c || null,
       clicksCount: 0,
       burnAfterRead: !!payload.b,
-      stripTrackers: payload.tr ?? true,
+      stripTrackers: true,
       status: 'active',
       createdAt: Date.now(),
       lastAccessedAt: null,
       securityReport: {
-        score: payload.sc || 100,
+        score: 100,
         isHttps: payload.u.startsWith('https:'),
         isPunycode: false,
         isIpHost: false,
@@ -272,15 +265,31 @@ export function getDevAppOrigin(): string {
   return window.location.origin;
 }
 
+export type LinkUrlFormat = 'domain_short' | 'slug_short' | 'portable';
+
 /**
  * Builds the real shareable app link.
- * Supports public shared URL (ais-pre) or current active origin (ais-dev).
+ * Defaults to clean, ultra-short URLs without long parameters!
  */
-export function buildShareableUrl(link: CloakedLink, useDevOrigin: boolean = false): string {
+export function buildShareableUrl(
+  link: CloakedLink, 
+  useDevOrigin: boolean = false,
+  format: LinkUrlFormat = 'domain_short'
+): string {
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const pathname = window.location.pathname;
-  const token = encodeLinkToToken(link);
-  return `${baseOrigin}${pathname}#/v/${encodeURIComponent(link.virtualDomain)}/${encodeURIComponent(link.slug)}?p=${token}`;
+
+  if (format === 'slug_short') {
+    return `${baseOrigin}${pathname}#/s/${encodeURIComponent(link.slug)}`;
+  }
+
+  if (format === 'portable') {
+    const token = encodeLinkToToken(link);
+    return `${baseOrigin}${pathname}#/v/${encodeURIComponent(link.virtualDomain)}/${encodeURIComponent(link.slug)}?p=${token}`;
+  }
+
+  // Default: domain_short (Clean, ultra-short URL: https://.../#/v/domain/slug)
+  return `${baseOrigin}${pathname}#/v/${encodeURIComponent(link.virtualDomain)}/${encodeURIComponent(link.slug)}`;
 }
 
 /**
