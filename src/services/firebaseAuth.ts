@@ -32,6 +32,7 @@ WORKSPACE_SCOPES.forEach((scope) => provider.addScope(scope));
 // In-memory access token cache (MANDATORY security rule: do NOT put in localStorage)
 let cachedAccessToken: string | null = null;
 let isSigningIn = false;
+let activeSignInPromise: Promise<{ user: User; accessToken: string } | null> | null = null;
 
 export const initAuth = (
   onAuthSuccess?: (user: User, token: string) => void,
@@ -53,23 +54,40 @@ export const initAuth = (
   });
 };
 
-export const googleSignIn = async (): Promise<{ user: User; accessToken: string }> => {
-  try {
-    isSigningIn = true;
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('Gagal mendapatkan token akses dari Google.');
-    }
-
-    cachedAccessToken = credential.accessToken;
-    return { user: result.user, accessToken: cachedAccessToken };
-  } catch (error: any) {
-    console.error('Google Sign In Error:', error);
-    throw error;
-  } finally {
-    isSigningIn = false;
+export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
+  if (activeSignInPromise) {
+    return activeSignInPromise;
   }
+
+  activeSignInPromise = (async () => {
+    try {
+      isSigningIn = true;
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (!credential?.accessToken) {
+        throw new Error('Gagal mendapatkan token akses dari Google.');
+      }
+
+      cachedAccessToken = credential.accessToken;
+      return { user: result.user, accessToken: cachedAccessToken };
+    } catch (error: any) {
+      const code = error?.code || '';
+      // Gracefully handle expected user cancellations or browser window closures without console errors
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        return null;
+      }
+      if (code === 'auth/popup-blocked') {
+        throw new Error('Jendela popup otorisasi Google diblokir browser. Mohon izinkan popup di peramban Anda.');
+      }
+      console.warn('Google Sign In notice:', error?.message || error);
+      throw error;
+    } finally {
+      isSigningIn = false;
+      activeSignInPromise = null;
+    }
+  })();
+
+  return activeSignInPromise;
 };
 
 export const getCachedAccessToken = (): string | null => {

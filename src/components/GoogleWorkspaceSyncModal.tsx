@@ -60,17 +60,21 @@ export const GoogleWorkspaceSyncModal: React.FC<GoogleWorkspaceSyncModalProps> =
   if (!isOpen) return null;
 
   const handleSignInGoogle = async () => {
+    if (isLoggingIn) return;
     setIsLoggingIn(true);
     setStatusMessage(null);
     try {
       const res = await googleSignIn();
+      if (!res) {
+        // User closed or cancelled the popup window
+        return;
+      }
       onUserChanged(res.user);
       setStatusMessage({
         type: 'success',
         text: `Berhasil terhubung dengan Google Workspace (${res.user.email}).`,
       });
     } catch (err: any) {
-      console.error(err);
       setStatusMessage({
         type: 'error',
         text: err?.message || 'Gagal login ke Google Workspace. Silakan coba kembali.',
@@ -94,6 +98,9 @@ export const GoogleWorkspaceSyncModal: React.FC<GoogleWorkspaceSyncModalProps> =
     if (!currentUser || !token) {
       try {
         const res = await googleSignIn();
+        if (!res) {
+          return;
+        }
         onUserChanged(res.user);
         token = res.accessToken;
       } catch {
@@ -127,7 +134,6 @@ export const GoogleWorkspaceSyncModal: React.FC<GoogleWorkspaceSyncModalProps> =
         text: `Berhasil menyinkronkan data ke Google Sheets ("CloakURL_Business_Database")!`,
       });
     } catch (err: any) {
-      console.error(err);
       setStatusMessage({
         type: 'error',
         text: err?.message || 'Gagal menyinkronkan ke Google Sheets.',
@@ -144,6 +150,9 @@ export const GoogleWorkspaceSyncModal: React.FC<GoogleWorkspaceSyncModalProps> =
     if (!currentUser || !token) {
       try {
         const res = await googleSignIn();
+        if (!res) {
+          return;
+        }
         onUserChanged(res.user);
         token = res.accessToken;
       } catch {
