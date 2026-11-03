@@ -30,7 +30,7 @@ import {
   BillingCycle,
   SUBSCRIPTION_PLANS
 } from './types/business';
-import { getInitialLinks, saveLinks, exportLinksToJson, decodeTokenToLink } from './utils/storage';
+import { getInitialLinks, saveLinks, exportLinksToJson, decodeTokenToLink, fetchLinkFromServer } from './utils/storage';
 import { 
   getInitialClients, 
   saveClients, 
@@ -97,18 +97,22 @@ export default function App() {
     };
   }, []);
 
-  // 2. Full routing detector: supports direct path routes (/siberes-ngk), hash routes (#/siberes-ngk), and portable tokens
-  const checkAppRoute = (currentLinks: CloakedLink[]) => {
+  // 2. Full routing detector: supports direct path routes (/siberes-ngk), hash routes (#/siberes-ngk), server API lookup, and portable tokens
+  const checkAppRoute = async (currentLinks: CloakedLink[]) => {
     const pathname = window.location.pathname;
     const hash = window.location.hash;
     const search = window.location.search;
 
     let targetLink: CloakedLink | undefined;
     let tokenFromQuery: string | null = null;
+    let urlFromQuery: string | null = null;
+    let searchedSlug = '';
+    let searchedDomain = '';
 
     if (search) {
       const qParams = new URLSearchParams(search);
       tokenFromQuery = qParams.get('p') || qParams.get('d');
+      urlFromQuery = qParams.get('u') || qParams.get('target');
     }
 
     // A. Check Hash Routing (e.g. #/siberes-ngk, #/v/domain/slug, #/s/slug)
@@ -118,6 +122,7 @@ export default function App() {
       if (hashQuery && !tokenFromQuery) {
         const qParams = new URLSearchParams(hashQuery);
         tokenFromQuery = qParams.get('p') || qParams.get('d');
+        urlFromQuery = qParams.get('u') || qParams.get('target');
       }
 
       let parts = hashPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
@@ -125,59 +130,52 @@ export default function App() {
         parts = parts.slice(1);
       }
 
-      let domain = '';
-      let slug = '';
       if (parts.length >= 2) {
-        domain = parts[0];
-        slug = parts[1];
+        searchedDomain = parts[0];
+        searchedSlug = parts[1];
       } else if (parts.length === 1) {
-        slug = parts[0];
-      }
-
-      if (slug || domain) {
-        targetLink = currentLinks.find((l) => {
-          if (slug && domain) {
-            return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
-          }
-          if (slug) {
-            return (
-              l.slug.toLowerCase() === slug.toLowerCase() ||
-              l.virtualDomain.toLowerCase() === slug.toLowerCase() ||
-              l.id.toLowerCase() === slug.toLowerCase()
-            );
-          }
-          return false;
-        });
+        searchedSlug = parts[0];
       }
     }
 
-    // B. Check Direct Path Routing (e.g. /siberes-ngk or /sec-6j2rmuv or /siberes.ngk)
-    if (!targetLink && pathname && pathname !== '/' && !pathname.includes('.')) {
+    // B. Check Direct Path Routing (e.g. /siberes-ngk or /sec-6j2rmuv or /sipermas/secure-link)
+    if (!searchedSlug && pathname && pathname !== '/' && !pathname.includes('.')) {
       const cleanPath = pathname.replace(/^\/+/, '');
       const parts = cleanPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
-      let domain = '';
-      let slug = '';
       if (parts.length >= 2) {
-        domain = parts[0];
-        slug = parts[1];
+        searchedDomain = parts[0];
+        searchedSlug = parts[1];
       } else if (parts.length === 1) {
-        slug = parts[0];
+        searchedSlug = parts[0];
       }
+    }
 
-      if (slug || domain) {
-        targetLink = currentLinks.find((l) => {
-          if (slug && domain) {
-            return l.virtualDomain.toLowerCase() === domain.toLowerCase() && l.slug.toLowerCase() === slug.toLowerCase();
-          }
-          if (slug) {
-            return (
-              l.slug.toLowerCase() === slug.toLowerCase() ||
-              l.virtualDomain.toLowerCase() === slug.toLowerCase() ||
-              l.id.toLowerCase() === slug.toLowerCase()
-            );
-          }
-          return false;
-        });
+    // Search local links array first
+    if (searchedSlug || searchedDomain) {
+      targetLink = currentLinks.find((l) => {
+        if (searchedSlug && searchedDomain) {
+          return l.virtualDomain.toLowerCase() === searchedDomain.toLowerCase() && l.slug.toLowerCase() === searchedSlug.toLowerCase();
+        }
+        if (searchedSlug) {
+          return (
+            l.slug.toLowerCase() === searchedSlug.toLowerCase() ||
+            l.virtualDomain.toLowerCase() === searchedSlug.toLowerCase() ||
+            l.id.toLowerCase() === searchedSlug.toLowerCase()
+          );
+        }
+        return false;
+      });
+
+      // Cross-Device Server Lookup: If link is not in recipient's local storage, fetch from Cloud Worker API!
+      if (!targetLink && searchedSlug) {
+        const fetched = await fetchLinkFromServer(searchedSlug, searchedDomain);
+        if (fetched) {
+          targetLink = fetched;
+          setLinks((prev) => {
+            const exists = prev.some((p) => p.id === fetched.id || p.slug === fetched.slug);
+            return exists ? prev : [fetched, ...prev];
+          });
+        }
       }
     }
 
@@ -188,6 +186,47 @@ export default function App() {
         targetLink = decoded;
         setLinks((prev) => [decoded, ...prev.filter((p) => p.id !== decoded.id)]);
       }
+    }
+
+    // D. Direct query URL parameter fallback (?u=https://...)
+    if (!targetLink && urlFromQuery) {
+      try {
+        const cleanUrl = decodeURIComponent(urlFromQuery);
+        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+          targetLink = {
+            id: `clk_dyn_${Date.now().toString(36)}`,
+            title: `Tautan Terproteksi: ${searchedDomain || 'gateway'}/${searchedSlug || 'link'}`,
+            originalUrl: cleanUrl,
+            cleanedUrl: cleanUrl,
+            virtualDomain: searchedDomain || 'secure-vault.internal',
+            slug: searchedSlug || 'link',
+            maskMode: 'sandbox',
+            pinProtection: { enabled: false, pinHash: '' },
+            expiration: 'never',
+            expiresAt: null,
+            maxClicks: null,
+            clicksCount: 0,
+            burnAfterRead: false,
+            stripTrackers: true,
+            status: 'active',
+            createdAt: Date.now(),
+            lastAccessedAt: null,
+            securityReport: {
+              score: 100,
+              isHttps: cleanUrl.startsWith('https:'),
+              isPunycode: false,
+              isIpHost: false,
+              hasSuspiciousKeywords: false,
+              removedTrackersCount: 0,
+              originalCleanUrl: cleanUrl,
+              verdict: 'safe',
+              issues: [],
+              recommendations: [],
+            },
+            accessLogs: [],
+          };
+        }
+      } catch {}
     }
 
     if (targetLink) {

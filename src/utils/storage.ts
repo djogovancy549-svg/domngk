@@ -15,116 +15,160 @@ export const PRESET_VIRTUAL_DOMAINS: PresavedDomainOption[] = [
 ];
 
 export async function getInitialLinks(): Promise<CloakedLink[]> {
+  let localLinks: CloakedLink[] = [];
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      const parsed = JSON.parse(stored) as CloakedLink[];
-      return parsed;
+      localLinks = JSON.parse(stored) as CloakedLink[];
     } catch {
-      // fallback to sample if parsing failed
+      // fallback
     }
   }
 
-  // Pre-populate with realistic samples demonstrating high security & domain disguise
-  const sample1Pin = await hashPin('1234');
-  const sample1Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing&utm_source=slack&utm_medium=channel_link';
-  const sample1Audit = auditUrlSecurity(sample1Url);
+  if (localLinks.length === 0) {
+    const sample1Pin = await hashPin('1234');
+    const sample1Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing&utm_source=slack&utm_medium=channel_link';
+    const sample1Audit = auditUrlSecurity(sample1Url);
+    const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model?fbclid=IwAR3XYZ123456789&utm_campaign=cybersec_whitepaper';
+    const sample2Audit = auditUrlSecurity(sample2Url);
 
-  const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model?fbclid=IwAR3XYZ123456789&utm_campaign=cybersec_whitepaper';
-  const sample2Audit = auditUrlSecurity(sample2Url);
-
-  const sampleLinks: CloakedLink[] = [
-    {
-      id: 'clk_docs_fin2026',
-      title: 'Laporan Finansial Kuartal 1 - Internal Only',
-      originalUrl: sample1Url,
-      cleanedUrl: sample1Audit.originalCleanUrl,
-      virtualDomain: 'secure-vault.internal',
-      slug: 'q1-financial-audit-2026',
-      maskMode: 'sandbox',
-      pinProtection: {
-        enabled: true,
-        pinHash: sample1Pin,
+    localLinks = [
+      {
+        id: 'clk_docs_fin2026',
+        title: 'Laporan Finansial Kuartal 1 - Internal Only',
+        originalUrl: sample1Url,
+        cleanedUrl: sample1Audit.originalCleanUrl,
+        virtualDomain: 'secure-vault.internal',
+        slug: 'q1-financial-audit-2026',
+        maskMode: 'sandbox',
+        pinProtection: {
+          enabled: true,
+          pinHash: sample1Pin,
+        },
+        expiration: '7d',
+        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        maxClicks: 50,
+        clicksCount: 14,
+        burnAfterRead: false,
+        stripTrackers: true,
+        status: 'active',
+        createdAt: Date.now() - 36 * 60 * 60 * 1000,
+        lastAccessedAt: Date.now() - 15 * 60 * 1000,
+        securityReport: sample1Audit,
+        accessLogs: [
+          {
+            id: 'log_1',
+            timestamp: Date.now() - 15 * 60 * 1000,
+            device: 'Desktop',
+            browser: 'Chrome 128 / macOS',
+            status: 'granted',
+            ipMasked: '103.144.xxx.12',
+          },
+          {
+            id: 'log_2',
+            timestamp: Date.now() - 4 * 60 * 60 * 1000,
+            device: 'Mobile',
+            browser: 'Mobile Safari / iOS',
+            status: 'granted',
+            ipMasked: '180.252.xxx.89',
+          },
+        ],
       },
-      expiration: '7d',
-      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-      maxClicks: 50,
-      clicksCount: 14,
-      burnAfterRead: false,
-      stripTrackers: true,
-      status: 'active',
-      createdAt: Date.now() - 36 * 60 * 60 * 1000,
-      lastAccessedAt: Date.now() - 15 * 60 * 1000,
-      securityReport: sample1Audit,
-      accessLogs: [
-        {
-          id: 'log_1',
-          timestamp: Date.now() - 15 * 60 * 1000,
-          device: 'Desktop',
-          browser: 'Chrome 128 / macOS',
-          status: 'granted',
-          ipMasked: '103.144.xxx.12',
+      {
+        id: 'clk_wiki_zerotrust',
+        title: 'Panduan Zero-Trust Architecture & Cloaking',
+        originalUrl: sample2Url,
+        cleanedUrl: sample2Audit.originalCleanUrl,
+        virtualDomain: 'safe-gateway.zero-trust.org',
+        slug: 'cybersec-architecture',
+        maskMode: 'interstitial',
+        pinProtection: {
+          enabled: false,
+          pinHash: '',
         },
-        {
-          id: 'log_2',
-          timestamp: Date.now() - 4 * 60 * 60 * 1000,
-          device: 'Mobile',
-          browser: 'Mobile Safari / iOS',
-          status: 'granted',
-          ipMasked: '180.252.xxx.89',
-        },
-        {
-          id: 'log_3',
-          timestamp: Date.now() - 12 * 60 * 60 * 1000,
-          device: 'Desktop',
-          browser: 'Firefox / Windows',
-          status: 'blocked_pin',
-          ipMasked: '36.88.xxx.45',
-        },
-      ],
-    },
-    {
-      id: 'clk_wiki_zerotrust',
-      title: 'Panduan Zero-Trust Architecture & Cloaking',
-      originalUrl: sample2Url,
-      cleanedUrl: sample2Audit.originalCleanUrl,
-      virtualDomain: 'safe-gateway.zero-trust.org',
-      slug: 'cybersec-architecture',
-      maskMode: 'interstitial',
-      pinProtection: {
-        enabled: false,
-        pinHash: '',
+        expiration: 'never',
+        expiresAt: null,
+        maxClicks: null,
+        clicksCount: 89,
+        burnAfterRead: false,
+        stripTrackers: true,
+        status: 'active',
+        createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
+        lastAccessedAt: Date.now() - 2 * 60 * 60 * 1000,
+        securityReport: sample2Audit,
+        accessLogs: [],
       },
-      expiration: 'never',
-      expiresAt: null,
-      maxClicks: null,
-      clicksCount: 89,
-      burnAfterRead: false,
-      stripTrackers: true,
-      status: 'active',
-      createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
-      lastAccessedAt: Date.now() - 2 * 60 * 60 * 1000,
-      securityReport: sample2Audit,
-      accessLogs: [
-        {
-          id: 'log_4',
-          timestamp: Date.now() - 2 * 60 * 60 * 1000,
-          device: 'Desktop',
-          browser: 'Edge / Windows 11',
-          status: 'granted',
-          ipMasked: '114.122.xxx.71',
-        },
-      ],
-    },
-  ];
+    ];
+  }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleLinks));
-  return sampleLinks;
+  // Fetch server-synced links and merge
+  try {
+    const serverLinks = await fetchAllServerLinks();
+    if (serverLinks && serverLinks.length > 0) {
+      const mergedMap = new Map<string, CloakedLink>();
+      for (const s of serverLinks) {
+        if (s && s.id) mergedMap.set(s.id, s);
+      }
+      for (const l of localLinks) {
+        if (l && l.id) mergedMap.set(l.id, l);
+      }
+      localLinks = Array.from(mergedMap.values());
+    }
+  } catch {}
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(localLinks));
+  syncLinksToServer(localLinks);
+  return localLinks;
+}
+
+export async function syncLinksToServer(links: CloakedLink[]): Promise<void> {
+  try {
+    await fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(links),
+    });
+  } catch (err) {
+    console.warn('Server sync failed:', err);
+  }
+}
+
+export async function fetchLinkFromServer(slug: string, domain?: string): Promise<CloakedLink | null> {
+  try {
+    const params = new URLSearchParams({ slug });
+    if (domain) params.append('domain', domain);
+    const res = await fetch(`/api/links?${params.toString()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.link) {
+        return data.link as CloakedLink;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch link from server:', err);
+  }
+  return null;
+}
+
+export async function fetchAllServerLinks(): Promise<CloakedLink[]> {
+  try {
+    const res = await fetch('/api/links');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.links)) {
+        return data.links as CloakedLink[];
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch all links from server:', err);
+  }
+  return [];
 }
 
 export function saveLinks(links: CloakedLink[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+    syncLinksToServer(links);
   } catch (err) {
     console.error('Failed to save links to localStorage:', err);
   }
