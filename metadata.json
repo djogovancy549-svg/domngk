@@ -1,0 +1,6 @@
+{
+  "name": "CloakURL - Secure Virtual Domain Masker",
+  "description": "Aplikasi penyamar dan pemendek link dengan domain virtual kustom berkeamanan tinggi, proteksi PIN, pembersih pelacak, dan inspeksi tautan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
