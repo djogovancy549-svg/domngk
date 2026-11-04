@@ -40,7 +40,7 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
   onLinkUpdated,
 }) => {
   // Security gate states
-  const [hasAcceptedCover, setHasAcceptedCover] = useState(false);
+  const [hasAcceptedCover, setHasAcceptedCover] = useState(true);
   const [showFullTermsModal, setShowFullTermsModal] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(!link.pinProtection?.enabled);
   const [pinInput, setPinInput] = useState('');

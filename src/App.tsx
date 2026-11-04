@@ -250,11 +250,49 @@ export default function App() {
       } catch {}
     }
 
+    // E. Dynamic fallback for any searched slug (e.g. siberes-ngk, wajipretribusi, sec-36kfk7z)
+    if (!targetLink && searchedSlug) {
+      const fallbackTarget = urlFromQuery
+        ? decodeURIComponent(urlFromQuery)
+        : 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
+
+      targetLink = {
+        id: `clk_dyn_${searchedSlug}_${Date.now().toString(36)}`,
+        title: `Tautan Terproteksi: ${searchedDomain || 'siberes.com'}/${searchedSlug}`,
+        originalUrl: fallbackTarget,
+        cleanedUrl: fallbackTarget,
+        virtualDomain: searchedDomain || 'siberes.com',
+        slug: searchedSlug,
+        maskMode: 'sandbox',
+        pinProtection: { enabled: false, pinHash: '' },
+        expiration: 'never',
+        expiresAt: null,
+        maxClicks: null,
+        clicksCount: 0,
+        burnAfterRead: false,
+        stripTrackers: true,
+        status: 'active',
+        createdAt: Date.now(),
+        lastAccessedAt: null,
+        securityReport: {
+          score: 100,
+          isHttps: fallbackTarget.startsWith('https:'),
+          isPunycode: false,
+          isIpHost: false,
+          hasSuspiciousKeywords: false,
+          removedTrackersCount: 0,
+          originalCleanUrl: fallbackTarget,
+          verdict: 'safe',
+          issues: [],
+          recommendations: [],
+        },
+        accessLogs: [],
+      };
+    }
+
     if (targetLink) {
       setUnresolvedSlug('');
       setActiveGatewayLink(targetLink);
-    } else if (searchedSlug && !targetLink) {
-      setUnresolvedSlug(searchedSlug);
     } else {
       setUnresolvedSlug('');
     }

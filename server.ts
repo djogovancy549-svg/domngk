@@ -19,6 +19,58 @@ const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model';
 
 const initialSamples = [
   {
+    id: 'clk_siberes_ngk',
+    title: 'Layanan Portal Daerah Siberes NGK',
+    originalUrl: sample2Url,
+    cleanedUrl: sample2Url,
+    virtualDomain: 'siberes.com',
+    slug: 'siberes-ngk',
+    maskMode: 'sandbox',
+    status: 'active',
+    createdAt: Date.now() - 48 * 60 * 60 * 1000,
+    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
+    accessLogs: []
+  },
+  {
+    id: 'clk_wajipretribusi',
+    title: 'Portal Pembayaran Wajib Retribusi Daerah',
+    originalUrl: sample1Url,
+    cleanedUrl: sample1Url,
+    virtualDomain: 'siberes.com',
+    slug: 'wajipretribusi',
+    maskMode: 'sandbox',
+    status: 'active',
+    createdAt: Date.now() - 72 * 60 * 60 * 1000,
+    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
+    accessLogs: []
+  },
+  {
+    id: 'clk_sipermas',
+    title: 'Sistem Informasi Pelayanan Masyarakat (SIPERMAS)',
+    originalUrl: sample1Url,
+    cleanedUrl: sample1Url,
+    virtualDomain: 'sipermas',
+    slug: 'secure-link',
+    maskMode: 'sandbox',
+    status: 'active',
+    createdAt: Date.now() - 24 * 60 * 60 * 1000,
+    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
+    accessLogs: []
+  },
+  {
+    id: 'clk_sec_36kfk7z',
+    title: 'Tautan Terproteksi CloakURL: sec-36kfk7z',
+    originalUrl: sample1Url,
+    cleanedUrl: sample1Url,
+    virtualDomain: 'siberes.com',
+    slug: 'sec-36kfk7z',
+    maskMode: 'sandbox',
+    status: 'active',
+    createdAt: Date.now() - 12 * 60 * 60 * 1000,
+    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
+    accessLogs: []
+  },
+  {
     id: 'clk_docs_fin2026',
     title: 'Laporan Finansial Kuartal 1 - Internal Only',
     originalUrl: sample1Url,
