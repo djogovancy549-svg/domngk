@@ -255,9 +255,9 @@ export function buildShareableUrl(
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const cleanSlug = encodeURIComponent(link.slug);
   const cleanDomain = encodeURIComponent(link.virtualDomain);
+  const token = encodeLinkToToken(link);
 
-  if (format === 'portable') {
-    const token = encodeLinkToToken(link);
+  if (format === 'portable' || format === 'hash_ultra_short') {
     return `${baseOrigin}/#/${cleanSlug}?p=${token}`;
   }
 
@@ -266,11 +266,10 @@ export function buildShareableUrl(
   }
 
   if (format === 'domain_short') {
-    return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}`;
+    return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?p=${token}`;
   }
 
-  // Default: hash_ultra_short (e.g. https://ais-pre-...run.app/#/siberes-ngk)
-  return `${baseOrigin}/#/${cleanSlug}`;
+  return `${baseOrigin}/#/${cleanSlug}?p=${token}`;
 }
 
 /**
