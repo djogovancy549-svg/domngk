@@ -37,7 +37,9 @@ import {
   exportLinksToJson, 
   decodeTokenToLink, 
   fetchLinkFromServer,
-  clearAllLinks 
+  clearAllLinks,
+  getInitialLinksSync,
+  resolveRouteSync
 } from './utils/storage';
 import { 
   getInitialClients, 
@@ -78,10 +80,10 @@ function hasRouteInUrl(): boolean {
 }
 
 export default function App() {
-  const [links, setLinks] = useState<CloakedLink[]>([]);
-  const [clients, setClients] = useState<ClientSubscription[]>([]);
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
-  const [syncMetadata, setSyncMetadata] = useState<GoogleSyncMetadata>(getSyncMetadata());
+  const [links, setLinks] = useState<CloakedLink[]>(() => getInitialLinksSync());
+  const [clients, setClients] = useState<ClientSubscription[]>(() => getInitialClients());
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => getInitialInvoices());
+  const [syncMetadata, setSyncMetadata] = useState<GoogleSyncMetadata>(() => getSyncMetadata());
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'business' | 'auditor' | 'guide'>('dashboard');
@@ -89,16 +91,21 @@ export default function App() {
   const [isGoogleSyncModalOpen, setIsGoogleSyncModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedLinkForDetails, setSelectedLinkForDetails] = useState<CloakedLink | null>(null);
-  const [activeGatewayLink, setActiveGatewayLink] = useState<CloakedLink | null>(null);
-  const [unresolvedSlug, setUnresolvedSlug] = useState<string>('');
+  
+  // Synchronous initial route resolution to prevent dashboard blink
+  const initialResolved = resolveRouteSync(links);
+  const [activeGatewayLink, setActiveGatewayLink] = useState<CloakedLink | null>(initialResolved.targetLink || null);
+  const [unresolvedSlug, setUnresolvedSlug] = useState<string>(initialResolved.unresolved || '');
   const [prefilledAuditUrl, setPrefilledAuditUrl] = useState('');
-  const [isCheckingRoute, setIsCheckingRoute] = useState(() => hasRouteInUrl());
+  const [isCheckingRoute, setIsCheckingRoute] = useState(false);
 
   // 1. Initialize data from storage & listen for Google Auth
   useEffect(() => {
     getInitialLinks().then((initial) => {
       setLinks(initial);
-      checkAppRoute(initial);
+      const res = resolveRouteSync(initial);
+      if (res.targetLink) setActiveGatewayLink(res.targetLink);
+      else if (res.unresolved) setUnresolvedSlug(res.unresolved);
     });
 
     setClients(getInitialClients());

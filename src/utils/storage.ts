@@ -390,3 +390,133 @@ export function exportLinksToJson(links: CloakedLink[]): void {
   downloadAnchor.click();
   downloadAnchor.remove();
 }
+
+export function getInitialLinksSync(): CloakedLink[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored) as CloakedLink[];
+    }
+  } catch {}
+  return [];
+}
+
+export function resolveRouteSync(currentLinks: CloakedLink[]): { targetLink?: CloakedLink; unresolved?: string } {
+  if (typeof window === 'undefined') return {};
+  const pathname = window.location.pathname;
+  const hash = window.location.hash;
+  const search = window.location.search;
+
+  let targetLink: CloakedLink | undefined;
+  let tokenFromQuery: string | null = null;
+  let urlFromQuery: string | null = null;
+  let searchedSlug = '';
+  let searchedDomain = '';
+
+  if (search) {
+    const qParams = new URLSearchParams(search);
+    tokenFromQuery = qParams.get('p') || qParams.get('d');
+    urlFromQuery = qParams.get('u') || qParams.get('target');
+  }
+
+  if (hash && hash !== '#' && hash !== '#/') {
+    const cleanHash = hash.replace(/^#\/?/, '');
+    const [hashPath, hashQuery] = cleanHash.split('?');
+    if (hashQuery && !tokenFromQuery) {
+      const qParams = new URLSearchParams(hashQuery);
+      tokenFromQuery = qParams.get('p') || qParams.get('d');
+      urlFromQuery = qParams.get('u') || qParams.get('target');
+    }
+
+    let parts = hashPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
+    if (parts[0] === 'v' || parts[0] === 's') {
+      parts = parts.slice(1);
+    }
+
+    if (parts.length >= 2) {
+      searchedDomain = parts[0];
+      searchedSlug = parts[1];
+    } else if (parts.length === 1) {
+      searchedSlug = parts[0];
+    }
+  }
+
+  if (!searchedSlug && pathname && pathname !== '/' && !pathname.includes('.')) {
+    const cleanPath = pathname.replace(/^\/+/, '');
+    const parts = cleanPath.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
+    if (parts.length >= 2) {
+      searchedDomain = parts[0];
+      searchedSlug = parts[1];
+    } else if (parts.length === 1) {
+      searchedSlug = parts[0];
+    }
+  }
+
+  if (searchedSlug || searchedDomain) {
+    targetLink = currentLinks.find((l) => {
+      if (searchedSlug && searchedDomain) {
+        return l.virtualDomain.toLowerCase() === searchedDomain.toLowerCase() && l.slug.toLowerCase() === searchedSlug.toLowerCase();
+      }
+      if (searchedSlug) {
+        return (
+          l.slug.toLowerCase() === searchedSlug.toLowerCase() ||
+          l.virtualDomain.toLowerCase() === searchedSlug.toLowerCase() ||
+          l.id.toLowerCase() === searchedSlug.toLowerCase()
+        );
+      }
+      return false;
+    });
+  }
+
+  if (!targetLink && tokenFromQuery) {
+    const decoded = decodeTokenToLink(tokenFromQuery);
+    if (decoded) targetLink = decoded;
+  }
+
+  if (!targetLink && urlFromQuery) {
+    try {
+      const cleanUrl = decodeURIComponent(urlFromQuery);
+      if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+        targetLink = {
+          id: `clk_dyn_${Date.now().toString(36)}`,
+          title: `Tautan Terproteksi: ${searchedDomain || 'siberes.com'}/${searchedSlug || 'link'}`,
+          originalUrl: cleanUrl,
+          cleanedUrl: cleanUrl,
+          virtualDomain: searchedDomain || 'siberes.com',
+          slug: searchedSlug || 'link',
+          maskMode: 'sandbox',
+          pinProtection: { enabled: false, pinHash: '' },
+          expiration: 'never',
+          expiresAt: null,
+          maxClicks: null,
+          clicksCount: 0,
+          burnAfterRead: false,
+          stripTrackers: true,
+          status: 'active',
+          createdAt: Date.now(),
+          lastAccessedAt: null,
+          securityReport: {
+            score: 100,
+            isHttps: cleanUrl.startsWith('https:'),
+            isPunycode: false,
+            isIpHost: false,
+            hasSuspiciousKeywords: false,
+            removedTrackersCount: 0,
+            originalCleanUrl: cleanUrl,
+            verdict: 'safe',
+            issues: [],
+            recommendations: [],
+          },
+          accessLogs: [],
+        };
+      }
+    } catch {}
+  }
+
+  if (targetLink) {
+    return { targetLink };
+  } else if (searchedSlug) {
+    return { unresolved: searchedSlug };
+  }
+  return {};
+}
