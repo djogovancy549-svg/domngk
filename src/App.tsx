@@ -52,6 +52,24 @@ import { ClientBillingManager } from './components/ClientBillingManager';
 import { GoogleWorkspaceSyncModal } from './components/GoogleWorkspaceSyncModal';
 import { PricingCalculatorModal } from './components/PricingCalculatorModal';
 
+function hasRouteInUrl(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hash = window.location.hash;
+  const pathname = window.location.pathname;
+  const search = window.location.search;
+
+  if (hash && hash !== '#' && hash !== '#/' && hash !== '#/dashboard') {
+    return true;
+  }
+  if (pathname && pathname !== '/' && !pathname.includes('.')) {
+    return true;
+  }
+  if (search && (search.includes('p=') || search.includes('u=') || search.includes('d='))) {
+    return true;
+  }
+  return false;
+}
+
 export default function App() {
   const [links, setLinks] = useState<CloakedLink[]>([]);
   const [clients, setClients] = useState<ClientSubscription[]>([]);
@@ -67,6 +85,7 @@ export default function App() {
   const [activeGatewayLink, setActiveGatewayLink] = useState<CloakedLink | null>(null);
   const [unresolvedSlug, setUnresolvedSlug] = useState<string>('');
   const [prefilledAuditUrl, setPrefilledAuditUrl] = useState('');
+  const [isCheckingRoute, setIsCheckingRoute] = useState(() => hasRouteInUrl());
 
   // 1. Initialize data from storage & listen for Google Auth
   useEffect(() => {
@@ -200,7 +219,7 @@ export default function App() {
             title: `Tautan Terproteksi: ${searchedDomain || 'gateway'}/${searchedSlug || 'link'}`,
             originalUrl: cleanUrl,
             cleanedUrl: cleanUrl,
-            virtualDomain: searchedDomain || 'secure-vault.internal',
+            virtualDomain: searchedDomain || 'siberes.com',
             slug: searchedSlug || 'link',
             maskMode: 'sandbox',
             pinProtection: { enabled: false, pinHash: '' },
@@ -239,6 +258,8 @@ export default function App() {
     } else {
       setUnresolvedSlug('');
     }
+
+    setIsCheckingRoute(false);
   };
 
   useEffect(() => {
@@ -387,6 +408,18 @@ export default function App() {
     setSyncMetadata(meta);
     saveSyncMetadata(meta);
   };
+
+  // 0. If route check is in progress on page load with a route slug in URL, render a dark loader to prevent dashboard flickering
+  if (isCheckingRoute && !activeGatewayLink && !unresolvedSlug) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans text-slate-100">
+        <div className="flex items-center gap-3 p-4 bg-slate-900/90 border border-slate-800 rounded-xl shadow-2xl">
+          <span className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-300">Membuka Portal Domain Virtual...</span>
+        </div>
+      </div>
+    );
+  }
 
   // If in gateway mode (either via hash or test button), render the gateway viewer
   if (activeGatewayLink) {

@@ -314,7 +314,8 @@ export function getDevAppOrigin(): string {
 export type LinkUrlFormat = 'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable';
 
 /**
- * Builds the real shareable app link with guaranteed zero 404 error fallback.
+ * Builds the real shareable app link.
+ * Defaults to ultra-short direct path URLs (e.g. https://ais-pre-.../#/siberes-ngk)
  */
 export function buildShareableUrl(
   link: CloakedLink, 
@@ -324,14 +325,9 @@ export function buildShareableUrl(
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const cleanSlug = encodeURIComponent(link.slug);
   const cleanDomain = encodeURIComponent(link.virtualDomain);
-  const cleanUrl = encodeURIComponent(link.cleanedUrl);
 
-  if (format === 'path_ultra_short') {
-    return `${baseOrigin}/#/${cleanSlug}?u=${cleanUrl}`;
-  }
-
-  if (format === 'hash_ultra_short') {
-    return `${baseOrigin}/#/${cleanSlug}?u=${cleanUrl}`;
+  if (format === 'path_ultra_short' || format === 'hash_ultra_short') {
+    return `${baseOrigin}/#/${cleanSlug}`;
   }
 
   if (format === 'portable') {
@@ -339,8 +335,8 @@ export function buildShareableUrl(
     return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?p=${token}`;
   }
 
-  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug?u=...)
-  return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?u=${cleanUrl}`;
+  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug)
+  return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}`;
 }
 
 /**
