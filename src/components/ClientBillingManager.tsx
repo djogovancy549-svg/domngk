@@ -14,7 +14,8 @@ import {
   Briefcase,
   X,
   CreditCard,
-  Building
+  Building,
+  Trash2
 } from 'lucide-react';
 import { ClientSubscription, InvoiceRecord, SubscriptionTier, BillingCycle, SUBSCRIPTION_PLANS } from '../types/business';
 import { buildWhatsappInvoiceLink } from '../utils/businessStorage';
@@ -24,6 +25,8 @@ interface ClientBillingManagerProps {
   invoices: InvoiceRecord[];
   onAddClient: (client: ClientSubscription) => void;
   onUpdateClient: (client: ClientSubscription) => void;
+  onDeleteClient: (clientId: string) => void;
+  onClearAllClients: () => void;
   onPayInvoice: (invoiceId: string) => void;
   onOpenPricingModal: () => void;
   onOpenGoogleSync: () => void;
@@ -34,6 +37,8 @@ export const ClientBillingManager: React.FC<ClientBillingManagerProps> = ({
   invoices,
   onAddClient,
   onUpdateClient,
+  onDeleteClient,
+  onClearAllClients,
   onPayInvoice,
   onOpenPricingModal,
   onOpenGoogleSync,
@@ -219,7 +224,7 @@ export const ClientBillingManager: React.FC<ClientBillingManagerProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
             <input
@@ -230,6 +235,22 @@ export const ClientBillingManager: React.FC<ClientBillingManagerProps> = ({
               className="pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
+
+          {clients.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Kosongkan semua data sampel klien agar Anda bisa mendaftar dari nol?")) {
+                  onClearAllClients();
+                }
+              }}
+              className="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/50 border border-red-800/60 text-red-300 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
+              title="Hapus semua data sampel untuk mulai dari nol"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Kosongkan Data Sampel</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsAddClientModalOpen(true)}
@@ -243,101 +264,137 @@ export const ClientBillingManager: React.FC<ClientBillingManagerProps> = ({
 
       {/* 1. Clients List Table */}
       {activeTab === 'clients' && (
-        <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900 shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/90 text-slate-400 border-b border-slate-800 font-medium">
-                <tr>
-                  <th className="py-3 px-4">Nama Klien & Usaha</th>
-                  <th className="py-3 px-4">Paket & Skema</th>
-                  <th className="py-3 px-4 text-right">Tarif Bulanan</th>
-                  <th className="py-3 px-4">Progres Kontrak</th>
-                  <th className="py-3 px-4">Jatuh Tempo</th>
-                  <th className="py-3 px-4 text-right">Aksi Tagihan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/70">
-                {filteredClients.map((client) => {
-                  const isDue = client.status === 'due';
-                  return (
-                    <tr key={client.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-white">{client.businessName}</div>
-                        <div className="text-[11px] text-slate-400">
-                          {client.clientName} · <span className="font-mono text-slate-500">{client.phoneWhatsapp}</span>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="font-medium text-slate-200 capitalize">
-                          {client.tier} ({client.billingCycle === 'annual_paid_monthly' ? 'Kontrak 1 Thn / Bln' : 'Bulanan'})
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {client.assignedLinksCount} Tautan Terdaftar
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right font-mono font-medium text-white tabular-nums">
-                        Rp {client.monthlyRate.toLocaleString('id-ID')}
-                        <span className="text-[10px] text-slate-500 block font-sans">/bln</span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="text-[11px] text-slate-300 font-mono tabular-nums">
-                          Bulan ke-{client.paidMonthsCount} dari {client.contractDurationMonths} bln
-                        </div>
-                        <div className="w-28 bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
-                          <div
-                            className="bg-emerald-500 h-full rounded-full"
-                            style={{
-                              width: `${Math.min(100, (client.paidMonthsCount / client.contractDurationMonths) * 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`font-mono tabular-nums ${
-                            isDue ? 'text-amber-400 font-medium' : 'text-slate-300'
-                          }`}
-                        >
-                          {new Date(client.nextDueDate).toLocaleDateString('id-ID', {
-                            dateStyle: 'medium',
-                          })}
-                        </span>
-                        <div className="text-[10px] text-slate-500">
-                          {isDue ? 'Menunggu Pembayaran' : 'Aktif'}
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right">
-                        {/* Instant WhatsApp Invoice Reminder */}
-                        {invoices.find((inv) => inv.clientId === client.id && inv.status === 'unpaid') ? (
-                          <a
-                            href={buildWhatsappInvoiceLink(
-                              invoices.find((inv) => inv.clientId === client.id && inv.status === 'unpaid')!
-                            )}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold inline-flex items-center gap-1.5 shadow transition-colors"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                            <span>Kirim Tagihan WA</span>
-                          </a>
-                        ) : (
-                          <span className="text-[11px] text-emerald-400 font-medium flex items-center justify-end gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Lunas
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        clients.length === 0 ? (
+          <div className="p-12 bg-slate-900/60 border border-slate-800 rounded-xl text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-slate-800/80 flex items-center justify-center">
+              <Users className="w-6 h-6 text-slate-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white">Data Klien Masih Kosong</h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                Anda dapat mulai mendaftarkan klien bisnis lokal dan UMKM baru sekarang.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsAddClientModalOpen(true)}
+              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow transition-colors inline-flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Daftarkan Klien Bisnis Pertama</span>
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900 shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-950/90 text-slate-400 border-b border-slate-800 font-medium">
+                  <tr>
+                    <th className="py-3 px-4">Nama Klien & Usaha</th>
+                    <th className="py-3 px-4">Paket & Skema</th>
+                    <th className="py-3 px-4 text-right">Tarif Bulanan</th>
+                    <th className="py-3 px-4">Progres Kontrak</th>
+                    <th className="py-3 px-4">Jatuh Tempo</th>
+                    <th className="py-3 px-4 text-right">Aksi Tagihan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/70">
+                  {filteredClients.map((client) => {
+                    const isDue = client.status === 'due';
+                    return (
+                      <tr key={client.id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-white">{client.businessName}</div>
+                          <div className="text-[11px] text-slate-400">
+                            {client.clientName} · <span className="font-mono text-slate-500">{client.phoneWhatsapp}</span>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="font-medium text-slate-200 capitalize">
+                            {client.tier} ({client.billingCycle === 'annual_paid_monthly' ? 'Kontrak 1 Thn / Bln' : 'Bulanan'})
+                          </div>
+                          <div className="text-[10px] text-slate-500">
+                            {client.assignedLinksCount} Tautan Terdaftar
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right font-mono font-medium text-white tabular-nums">
+                          Rp {client.monthlyRate.toLocaleString('id-ID')}
+                          <span className="text-[10px] text-slate-500 block font-sans">/bln</span>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="text-[11px] text-slate-300 font-mono tabular-nums">
+                            Bulan ke-{client.paidMonthsCount} dari {client.contractDurationMonths} bln
+                          </div>
+                          <div className="w-28 bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
+                            <div
+                              className="bg-emerald-500 h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, (client.paidMonthsCount / client.contractDurationMonths) * 100)}%`,
+                              }}
+                            />
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`font-mono tabular-nums ${
+                              isDue ? 'text-amber-400 font-medium' : 'text-slate-300'
+                            }`}
+                          >
+                            {new Date(client.nextDueDate).toLocaleDateString('id-ID', {
+                              dateStyle: 'medium',
+                            })}
+                          </span>
+                          <div className="text-[10px] text-slate-500">
+                            {isDue ? 'Menunggu Pembayaran' : 'Aktif'}
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Instant WhatsApp Invoice Reminder */}
+                            {invoices.find((inv) => inv.clientId === client.id && inv.status === 'unpaid') ? (
+                              <a
+                                href={buildWhatsappInvoiceLink(
+                                  invoices.find((inv) => inv.clientId === client.id && inv.status === 'unpaid')!
+                                )}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold inline-flex items-center gap-1.5 shadow transition-colors"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span>Kirim Tagihan WA</span>
+                              </a>
+                            ) : (
+                              <span className="text-[11px] text-emerald-400 font-medium flex items-center justify-end gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Lunas
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Yakin ingin menghapus data pendaftaran klien "${client.businessName}"?`)) {
+                                  onDeleteClient(client.id);
+                                }
+                              }}
+                              className="p-1.5 text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-900/40 border border-red-800/50 rounded transition-colors"
+                              title="Hapus Klien Ini"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
       )}
 
       {/* 2. Invoices List Table */}

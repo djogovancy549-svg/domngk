@@ -29,6 +29,7 @@ interface LinksTableProps {
   onTestLink: (link: CloakedLink) => void;
   onToggleStatus: (id: string) => void;
   onDeleteLink: (id: string) => void;
+  onClearAllLinks?: () => void;
   onExportJson: () => void;
   onImportJson: (imported: CloakedLink[]) => void;
 }
@@ -40,6 +41,7 @@ export const LinksTable: React.FC<LinksTableProps> = ({
   onTestLink,
   onToggleStatus,
   onDeleteLink,
+  onClearAllLinks,
   onExportJson,
   onImportJson,
 }) => {
@@ -166,8 +168,24 @@ export const LinksTable: React.FC<LinksTableProps> = ({
             </button>
           </div>
 
-          {/* Backup Export / Import */}
+          {/* Backup Export / Import & Clear */}
           <div className="flex items-center gap-1.5">
+            {links.length > 0 && onClearAllLinks && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("Kosongkan semua data sampel tautan agar Anda bisa mendaftar dari nol?")) {
+                    onClearAllLinks();
+                  }
+                }}
+                className="p-2 text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-900/40 border border-red-800/50 rounded-lg transition-colors text-xs flex items-center gap-1"
+                title="Hapus semua tautan sampel"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                <span className="hidden sm:inline">Kosongkan Tautan Sampel</span>
+              </button>
+            )}
+
             <button
               onClick={onExportJson}
               title="Ekspor Cadangan JSON"

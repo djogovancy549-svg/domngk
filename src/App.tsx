@@ -317,6 +317,11 @@ export default function App() {
     }
   };
 
+  const handleClearAllLinks = () => {
+    setLinks([]);
+    saveLinks([]);
+  };
+
   const handleImportJson = (imported: CloakedLink[]) => {
     setLinks(imported);
     saveLinks(imported);
@@ -395,6 +400,22 @@ export default function App() {
       };
       handleUpdateClient(updatedClient);
     }
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    const updatedClients = clients.filter((c) => c.id !== clientId);
+    const updatedInvoices = invoices.filter((i) => i.clientId !== clientId);
+    setClients(updatedClients);
+    saveClients(updatedClients);
+    setInvoices(updatedInvoices);
+    saveInvoices(updatedInvoices);
+  };
+
+  const handleClearAllClients = () => {
+    setClients([]);
+    saveClients([]);
+    setInvoices([]);
+    saveInvoices([]);
   };
 
   const handleSelectPlanForNewClient = (
@@ -594,6 +615,7 @@ export default function App() {
             onTestLink={(link) => setActiveGatewayLink(link)}
             onToggleStatus={handleToggleStatus}
             onDeleteLink={handleDeleteLink}
+            onClearAllLinks={handleClearAllLinks}
             onExportJson={() => exportLinksToJson(links)}
             onImportJson={handleImportJson}
           />
@@ -605,6 +627,8 @@ export default function App() {
             invoices={invoices}
             onAddClient={handleAddClient}
             onUpdateClient={handleUpdateClient}
+            onDeleteClient={handleDeleteClient}
+            onClearAllClients={handleClearAllClients}
             onPayInvoice={handlePayInvoice}
             onOpenPricingModal={() => setIsPricingModalOpen(true)}
             onOpenGoogleSync={() => setIsGoogleSyncModalOpen(true)}

@@ -342,6 +342,17 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                 💡 <em>Catatan:</em> Setelah tautan dibuat, aplikasi akan menghasilkan <strong>Tautan Aktif Resmi (Share Link)</strong> berkeamanan tinggi yang 100% bisa dibuka oleh siapa saja di email atau HP mana pun tanpa perlu membeli domain di reseller.
               </p>
             </div>
+
+            {/* Cyber Security Shield Notice */}
+            <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-lg text-xs text-emerald-300 flex items-start gap-2.5 shadow">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <strong className="text-white block font-semibold">Perlindungan Cyber Security Direct Shield:</strong>
+                <p className="text-[11px] text-emerald-200/90 leading-relaxed">
+                  Setiap URL asli yang dipendekkan & disamarkan akan terlindungi dari pembukaan bocor secara langsung. Akses pengunjung otomatis dibungkus secara aman di dalam <strong>Frame Gateway Aplikasi CloakURL</strong> dengan enkripsi SSL 256-bit dan penyerapan pelacak iklan.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* 4. Mode Penyamaran (Cloaking Engine) */}
