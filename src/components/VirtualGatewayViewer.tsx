@@ -682,7 +682,7 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
             src={formatUrlForFrameEmbed(link.cleanedUrl)}
             title={link.title}
             className="w-full h-full flex-1 border-0"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation-by-user-activation"
             onError={() => setFrameLoadError(true)}
           />
         </div>

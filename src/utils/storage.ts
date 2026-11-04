@@ -1,7 +1,7 @@
 import { CloakedLink, PresavedDomainOption } from '../types';
 import { auditUrlSecurity, hashPin } from './security';
 
-const STORAGE_KEY = 'cloakurl_links_v1';
+const STORAGE_KEY = 'cloakurl_links_v2';
 
 // Preset virtual domains to give users instant professional options without registering anything
 export const PRESET_VIRTUAL_DOMAINS: PresavedDomainOption[] = [
@@ -23,157 +23,11 @@ export async function getInitialLinks(): Promise<CloakedLink[]> {
     try {
       localLinks = JSON.parse(stored) as CloakedLink[];
     } catch {
-      // fallback
+      // ignore
     }
   }
 
-  if (localLinks.length === 0) {
-    const sample1Pin = await hashPin('1234');
-    const sample1Url = 'https://wikipedia.org/wiki/Zero-trust_security_model?utm_source=slack&utm_medium=channel_link';
-    const sample1Audit = auditUrlSecurity(sample1Url);
-    const sample2Url = 'https://wikipedia.org/wiki/Cybersecurity?fbclid=IwAR3XYZ123456789&utm_campaign=cybersec_whitepaper';
-    const sample2Audit = auditUrlSecurity(sample2Url);
-
-    const sample3Url = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-    const sample3Audit = auditUrlSecurity(sample3Url);
-
-    localLinks = [
-      {
-        id: 'clk_siberes_ngk',
-        title: 'Layanan Portal Daerah Siberes NGK',
-        originalUrl: sample2Url,
-        cleanedUrl: sample2Audit.originalCleanUrl,
-        virtualDomain: 'siberes.com',
-        slug: 'siberes-ngk',
-        maskMode: 'sandbox',
-        pinProtection: { enabled: false, pinHash: '' },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 150,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 48 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 5 * 60 * 1000,
-        securityReport: sample2Audit,
-        accessLogs: [],
-      },
-      {
-        id: 'clk_wajipretribusi',
-        title: 'Portal Pembayaran Wajib Retribusi Daerah',
-        originalUrl: sample3Url,
-        cleanedUrl: sample3Audit.originalCleanUrl,
-        virtualDomain: 'siberes.com',
-        slug: 'wajipretribusi',
-        maskMode: 'sandbox',
-        pinProtection: { enabled: false, pinHash: '' },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 320,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 72 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 2 * 60 * 1000,
-        securityReport: sample3Audit,
-        accessLogs: [],
-      },
-      {
-        id: 'clk_sipermas',
-        title: 'Sistem Informasi Pelayanan Masyarakat (SIPERMAS)',
-        originalUrl: sample3Url,
-        cleanedUrl: sample3Audit.originalCleanUrl,
-        virtualDomain: 'sipermas',
-        slug: 'secure-link',
-        maskMode: 'sandbox',
-        pinProtection: { enabled: false, pinHash: '' },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 95,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 24 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 10 * 60 * 1000,
-        securityReport: sample3Audit,
-        accessLogs: [],
-      },
-      {
-        id: 'clk_sec_36kfk7z',
-        title: 'Tautan Terproteksi CloakURL: sec-36kfk7z',
-        originalUrl: sample3Url,
-        cleanedUrl: sample3Audit.originalCleanUrl,
-        virtualDomain: 'siberes.com',
-        slug: 'sec-36kfk7z',
-        maskMode: 'sandbox',
-        pinProtection: { enabled: false, pinHash: '' },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 42,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 12 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 1 * 60 * 1000,
-        securityReport: sample3Audit,
-        accessLogs: [],
-      },
-      {
-        id: 'clk_docs_fin2026',
-        title: 'Laporan Finansial Kuartal 1 - Internal Only',
-        originalUrl: sample1Url,
-        cleanedUrl: sample1Audit.originalCleanUrl,
-        virtualDomain: 'siberes.com',
-        slug: 'q1-financial-audit-2026',
-        maskMode: 'sandbox',
-        pinProtection: {
-          enabled: true,
-          pinHash: sample1Pin,
-        },
-        expiration: '7d',
-        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-        maxClicks: 50,
-        clicksCount: 14,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 36 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 15 * 60 * 1000,
-        securityReport: sample1Audit,
-        accessLogs: [],
-      },
-      {
-        id: 'clk_wiki_zerotrust',
-        title: 'Panduan Zero-Trust Architecture & Cloaking',
-        originalUrl: sample2Url,
-        cleanedUrl: sample2Audit.originalCleanUrl,
-        virtualDomain: 'siberes-ngk.net',
-        slug: 'cybersec-architecture',
-        maskMode: 'interstitial',
-        pinProtection: {
-          enabled: false,
-          pinHash: '',
-        },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 89,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
-        lastAccessedAt: Date.now() - 2 * 60 * 60 * 1000,
-        securityReport: sample2Audit,
-        accessLogs: [],
-      },
-    ];
-  }
-
-  // Fetch server-synced links and merge
+  // Fetch server-persisted links (stored on disk in server.ts)
   try {
     const serverLinks = await fetchAllServerLinks();
     if (serverLinks && serverLinks.length > 0) {
@@ -186,10 +40,11 @@ export async function getInitialLinks(): Promise<CloakedLink[]> {
       }
       localLinks = Array.from(mergedMap.values());
     }
-  } catch {}
+  } catch (err) {
+    console.warn('Could not fetch server links on init:', err);
+  }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(localLinks));
-  syncLinksToServer(localLinks);
   return localLinks;
 }
 
@@ -205,10 +60,23 @@ export async function syncLinksToServer(links: CloakedLink[]): Promise<void> {
   }
 }
 
+export async function clearAllLinks(): Promise<void> {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    await fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reset: true }),
+    });
+  } catch (err) {
+    console.warn('Failed to reset links on server:', err);
+  }
+}
+
 export async function fetchLinkFromServer(slug: string, domain?: string): Promise<CloakedLink | null> {
   try {
-    const params = new URLSearchParams({ slug });
-    if (domain) params.append('domain', domain);
+    const params = new URLSearchParams({ slug: slug.trim() });
+    if (domain) params.append('domain', domain.trim());
     const res = await fetch(`/api/links?${params.toString()}`);
     if (res.ok) {
       const data = await res.json();
@@ -260,7 +128,6 @@ export interface PortableLinkPayload {
 
 /**
  * Encodes a cloaked link into a compact, URL-safe portable token.
- * Optimized to be lightweight so links remain as short as possible.
  */
 export function encodeLinkToToken(link: CloakedLink): string {
   const payload: PortableLinkPayload = {
@@ -292,14 +159,14 @@ export function decodeTokenToLink(token: string): CloakedLink | null {
     }
     const json = decodeURIComponent(atob(base64));
     const payload = JSON.parse(json) as PortableLinkPayload;
-    if (!payload.u || !payload.d) return null;
+    if (!payload.u) return null;
 
     return {
       id: `clk_${Date.now().toString(36)}`,
-      title: payload.t || `Tautan Terproteksi: ${payload.d}/${payload.s || 'link'}`,
+      title: payload.t || `Tautan Terproteksi: ${payload.d || 'siberes.com'}/${payload.s || 'link'}`,
       originalUrl: payload.u,
       cleanedUrl: payload.u,
-      virtualDomain: payload.d,
+      virtualDomain: payload.d || 'siberes.com',
       slug: payload.s || 'link',
       maskMode: (payload.m as any) || 'sandbox',
       pinProtection: {
@@ -359,13 +226,6 @@ export function setCustomBaseOrigin(host: string): void {
   } catch {}
 }
 
-/**
- * Returns the public shared origin.
- * Automatically adapts to:
- * 1. Custom domain / Cloudflare Pages domain if configured
-        * 2. Active Cloudflare Pages origin (e.g. https://my-app.pages.dev)
- * 3. Or Google AI Studio preview origin (ais-pre-...)
- */
 export function getPublicAppOrigin(): string {
   const custom = getCustomBaseOrigin();
   if (custom) return custom;
@@ -381,37 +241,41 @@ export function getDevAppOrigin(): string {
   return window.location.origin;
 }
 
-export type LinkUrlFormat = 'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable';
+export type LinkUrlFormat = 'hash_ultra_short' | 'portable' | 'domain_short' | 'self_contained';
 
 /**
  * Builds the real shareable app link.
- * Defaults to ultra-short direct path URLs (e.g. https://ais-pre-.../#/siberes-ngk)
+ * ALWAYS uses /#/ hash routing so that Google Cloud Run static hosting NEVER gives 404!
  */
 export function buildShareableUrl(
   link: CloakedLink, 
   useDevOrigin: boolean = false,
-  format: LinkUrlFormat = 'path_ultra_short'
+  format: LinkUrlFormat = 'hash_ultra_short'
 ): string {
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const cleanSlug = encodeURIComponent(link.slug);
   const cleanDomain = encodeURIComponent(link.virtualDomain);
 
-  if (format === 'path_ultra_short' || format === 'hash_ultra_short') {
-    return `${baseOrigin}/#/${cleanSlug}`;
-  }
-
   if (format === 'portable') {
     const token = encodeLinkToToken(link);
-    return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?p=${token}`;
+    return `${baseOrigin}/#/${cleanSlug}?p=${token}`;
   }
 
-  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug)
-  return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}`;
+  if (format === 'self_contained') {
+    return `${baseOrigin}/#/${cleanSlug}?u=${encodeURIComponent(link.cleanedUrl)}`;
+  }
+
+  if (format === 'domain_short') {
+    return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}`;
+  }
+
+  // Default: hash_ultra_short (e.g. https://ais-pre-...run.app/#/siberes-ngk)
+  return `${baseOrigin}/#/${cleanSlug}`;
 }
 
 /**
  * Builds the simulated "Virtual Domain" visual URL string
- * e.g., "https://secure-vault.internal/q1-financial-audit-2026"
+ * e.g., "https://siberes.com/siberes-ngk"
  */
 export function buildVirtualDisplayUrl(link: CloakedLink): string {
   const cleanDomain = link.virtualDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
@@ -420,9 +284,7 @@ export function buildVirtualDisplayUrl(link: CloakedLink): string {
 }
 
 /**
- * Generates a 100% standalone single-file HTML gateway!
- * This file can be sent directly via email attachment or WhatsApp,
- * opened on ANY computer or phone offline/online with ZERO Google 403 or 404 server errors!
+ * Generates a 100% standalone single-file HTML gateway
  */
 export function generateStandaloneHtml(link: CloakedLink): string {
   const virtualUrl = buildVirtualDisplayUrl(link);
@@ -438,7 +300,7 @@ export function generateStandaloneHtml(link: CloakedLink): string {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #020617; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    .header { height: 52px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; items-center; justify-content: space-between; padding: 0 16px; align-items: center; gap: 12px; }
+    .header { height: 52px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; gap: 12px; }
     .omnibox { flex: 1; max-width: 600px; margin: 0 auto; background: #020617; border: 1px solid #334155; border-radius: 8px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 13px; color: #34d399; }
     .lock { color: #34d399; font-size: 14px; }
     .viewport { flex: 1; display: flex; align-items: center; justify-content: center; background: #020617; padding: 12px; }
@@ -528,5 +390,3 @@ export function exportLinksToJson(links: CloakedLink[]): void {
   downloadAnchor.click();
   downloadAnchor.remove();
 }
-
-

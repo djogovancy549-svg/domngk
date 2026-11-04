@@ -8,44 +8,6 @@ export interface Env {
 // In-memory link store that persists across requests within worker isolate lifecycle
 const globalLinkMap = new Map<string, any>();
 
-// Seed initial sample links into worker memory
-const sample1Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
-const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model';
-
-const initialSamples = [
-  {
-    id: 'clk_docs_fin2026',
-    title: 'Laporan Finansial Kuartal 1 - Internal Only',
-    originalUrl: sample1Url,
-    cleanedUrl: sample1Url,
-    virtualDomain: 'secure-vault.internal',
-    slug: 'q1-financial-audit-2026',
-    maskMode: 'sandbox',
-    status: 'active',
-    createdAt: Date.now() - 36 * 60 * 60 * 1000,
-    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
-    accessLogs: []
-  },
-  {
-    id: 'clk_wiki_zerotrust',
-    title: 'Panduan Zero-Trust Architecture & Cloaking',
-    originalUrl: sample2Url,
-    cleanedUrl: sample2Url,
-    virtualDomain: 'safe-gateway.zero-trust.org',
-    slug: 'cybersec-architecture',
-    maskMode: 'interstitial',
-    status: 'active',
-    createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
-    securityReport: { score: 100, isHttps: true, verdict: 'safe', issues: [], recommendations: [] },
-    accessLogs: []
-  }
-];
-
-for (const link of initialSamples) {
-  globalLinkMap.set(link.slug.toLowerCase(), link);
-  globalLinkMap.set(`${link.virtualDomain.toLowerCase()}/${link.slug.toLowerCase()}`, link);
-}
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -55,16 +17,22 @@ export default {
       if (request.method === 'POST') {
         try {
           const body = await request.json();
+          if (body && body.reset === true) {
+            globalLinkMap.clear();
+            return new Response(JSON.stringify({ success: true, count: 0, message: 'Store cleared' }), {
+              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+          }
           const items = Array.isArray(body) ? body : [body];
           for (const item of items) {
             if (item && item.slug) {
-              const slugKey = item.slug.toLowerCase();
+              const slugKey = String(item.slug).toLowerCase().trim();
               globalLinkMap.set(slugKey, item);
               if (item.virtualDomain) {
-                globalLinkMap.set(`${item.virtualDomain.toLowerCase()}/${slugKey}`, item);
+                globalLinkMap.set(`${String(item.virtualDomain).toLowerCase().trim()}/${slugKey}`, item);
               }
               if (item.id) {
-                globalLinkMap.set(item.id.toLowerCase(), item);
+                globalLinkMap.set(String(item.id).toLowerCase().trim(), item);
               }
             }
           }
@@ -79,12 +47,19 @@ export default {
         }
       }
 
+      if (request.method === 'DELETE') {
+        globalLinkMap.clear();
+        return new Response(JSON.stringify({ success: true, message: 'Store reset' }), {
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
+      }
+
       // GET /api/links?slug=...&domain=...
-      const querySlug = url.searchParams.get('slug') || url.searchParams.get('s');
-      const queryDomain = url.searchParams.get('domain') || url.searchParams.get('d');
+      const querySlug = (url.searchParams.get('slug') || url.searchParams.get('s') || '').toLowerCase().trim();
+      const queryDomain = (url.searchParams.get('domain') || url.searchParams.get('d') || '').toLowerCase().trim();
       if (querySlug) {
-        const keyWithDomain = queryDomain ? `${queryDomain.toLowerCase()}/${querySlug.toLowerCase()}` : '';
-        const found = (keyWithDomain && globalLinkMap.get(keyWithDomain)) || globalLinkMap.get(querySlug.toLowerCase());
+        const keyWithDomain = queryDomain ? `${queryDomain}/${querySlug}` : '';
+        const found = (keyWithDomain && globalLinkMap.get(keyWithDomain)) || globalLinkMap.get(querySlug);
         if (found) {
           return new Response(JSON.stringify({ success: true, link: found }), {
             headers: {
@@ -109,7 +84,7 @@ export default {
       return new Response(null, {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         }
       });
@@ -132,4 +107,3 @@ export default {
     return new Response('Not Found', { status: 404 });
   },
 };
-

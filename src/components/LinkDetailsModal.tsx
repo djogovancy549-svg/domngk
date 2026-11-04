@@ -25,7 +25,8 @@ import { CloakedLink } from '../types';
 import { 
   buildShareableUrl, 
   buildVirtualDisplayUrl, 
-  downloadStandaloneHtml 
+  downloadStandaloneHtml,
+  LinkUrlFormat
 } from '../utils/storage';
 
 interface LinkDetailsModalProps {
@@ -50,7 +51,7 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
   const [copiedOriginal, setCopiedOriginal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [useDevUrl, setUseDevUrl] = useState(false);
-  const [urlFormat, setUrlFormat] = useState<'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable'>('path_ultra_short');
+  const [urlFormat, setUrlFormat] = useState<LinkUrlFormat>('hash_ultra_short');
 
   useEffect(() => {
     if (link) {
@@ -202,14 +203,25 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
               <span className="text-slate-400 text-[11px] font-medium mr-1">Format Tautan:</span>
               <button
                 type="button"
-                onClick={() => setUrlFormat('path_ultra_short')}
+                onClick={() => setUrlFormat('hash_ultra_short')}
                 className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
-                  urlFormat === 'path_ultra_short'
+                  urlFormat === 'hash_ultra_short'
                     ? 'bg-emerald-600 border-emerald-500 text-white font-bold'
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                ⚡ Hash Short Direct (bebas 404)
+                ⚡ Pendek Ringkas (#/{link.slug})
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlFormat('self_contained')}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                  urlFormat === 'self_contained'
+                    ? 'bg-teal-600 border-teal-500 text-white font-bold'
+                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                🛡️ Portabel Cross-Device (?u=)
               </button>
               <button
                 type="button"
@@ -220,7 +232,7 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                🌐 Domain Virtual Format (siberes.com)
+                🌐 Format Domain Virtual
               </button>
               <button
                 type="button"
@@ -231,7 +243,7 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                🔑 Token Portabel Standalone
+                🔑 Token Standalone (?p=)
               </button>
             </div>
 

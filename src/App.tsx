@@ -31,7 +31,14 @@ import {
   BillingCycle,
   SUBSCRIPTION_PLANS
 } from './types/business';
-import { getInitialLinks, saveLinks, exportLinksToJson, decodeTokenToLink, fetchLinkFromServer } from './utils/storage';
+import { 
+  getInitialLinks, 
+  saveLinks, 
+  exportLinksToJson, 
+  decodeTokenToLink, 
+  fetchLinkFromServer,
+  clearAllLinks 
+} from './utils/storage';
 import { 
   getInitialClients, 
   saveClients, 
@@ -216,7 +223,7 @@ export default function App() {
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
           targetLink = {
             id: `clk_dyn_${Date.now().toString(36)}`,
-            title: `Tautan Terproteksi: ${searchedDomain || 'gateway'}/${searchedSlug || 'link'}`,
+            title: `Tautan Terproteksi: ${searchedDomain || 'siberes.com'}/${searchedSlug || 'link'}`,
             originalUrl: cleanUrl,
             cleanedUrl: cleanUrl,
             virtualDomain: searchedDomain || 'siberes.com',
@@ -246,55 +253,27 @@ export default function App() {
             },
             accessLogs: [],
           };
+          // Persist dynamically decoded link so it stays saved
+          setLinks((prev) => {
+            const exists = prev.some((p) => p.slug === targetLink!.slug);
+            const updated = exists ? prev : [targetLink!, ...prev];
+            saveLinks(updated);
+            return updated;
+          });
         }
       } catch {}
-    }
-
-    // E. Dynamic fallback for any searched slug (e.g. siberes-ngk, wajipretribusi, sec-36kfk7z)
-    if (!targetLink && searchedSlug) {
-      const fallbackTarget = urlFromQuery
-        ? decodeURIComponent(urlFromQuery)
-        : 'https://wikipedia.org/wiki/Zero-trust_security_model';
-
-      targetLink = {
-        id: `clk_dyn_${searchedSlug}_${Date.now().toString(36)}`,
-        title: `Tautan Terproteksi: ${searchedDomain || 'siberes.com'}/${searchedSlug}`,
-        originalUrl: fallbackTarget,
-        cleanedUrl: fallbackTarget,
-        virtualDomain: searchedDomain || 'siberes.com',
-        slug: searchedSlug,
-        maskMode: 'sandbox',
-        pinProtection: { enabled: false, pinHash: '' },
-        expiration: 'never',
-        expiresAt: null,
-        maxClicks: null,
-        clicksCount: 0,
-        burnAfterRead: false,
-        stripTrackers: true,
-        status: 'active',
-        createdAt: Date.now(),
-        lastAccessedAt: null,
-        securityReport: {
-          score: 100,
-          isHttps: fallbackTarget.startsWith('https:'),
-          isPunycode: false,
-          isIpHost: false,
-          hasSuspiciousKeywords: false,
-          removedTrackersCount: 0,
-          originalCleanUrl: fallbackTarget,
-          verdict: 'safe',
-          issues: [],
-          recommendations: [],
-        },
-        accessLogs: [],
-      };
     }
 
     if (targetLink) {
       setUnresolvedSlug('');
       setActiveGatewayLink(targetLink);
+    } else if (searchedSlug) {
+      // Slug was explicitly visited but not found in database and no ?u= parameter provided
+      setUnresolvedSlug(searchedSlug);
+      setActiveGatewayLink(null);
     } else {
       setUnresolvedSlug('');
+      setActiveGatewayLink(null);
     }
 
     setIsCheckingRoute(false);
@@ -355,9 +334,9 @@ export default function App() {
     }
   };
 
-  const handleClearAllLinks = () => {
+  const handleClearAllLinks = async () => {
     setLinks([]);
-    saveLinks([]);
+    await clearAllLinks();
   };
 
   const handleImportJson = (imported: CloakedLink[]) => {

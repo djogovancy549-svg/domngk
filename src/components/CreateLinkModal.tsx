@@ -31,7 +31,7 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
 }) => {
   const [targetUrl, setTargetUrl] = useState('');
   const [title, setTitle] = useState('');
-  const [virtualDomain, setVirtualDomain] = useState('secure-vault.internal');
+  const [virtualDomain, setVirtualDomain] = useState('siberes.com');
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [customDomainInput, setCustomDomainInput] = useState('');
   const [slug, setSlug] = useState('');
@@ -40,7 +40,7 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
   // Security options
   const [enablePin, setEnablePin] = useState(false);
   const [pinCode, setPinCode] = useState('');
-  const [expiration, setExpiration] = useState<ExpirationOption>('7d');
+  const [expiration, setExpiration] = useState<ExpirationOption>('never');
   const [hasClickLimit, setHasClickLimit] = useState(false);
   const [maxClicks, setMaxClicks] = useState<number>(20);
   const [stripTrackers, setStripTrackers] = useState(true);
