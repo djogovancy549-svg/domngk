@@ -69,13 +69,17 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
 
   // Handle Interstitial auto-redirect countdown
   useEffect(() => {
-    if (isUnlocked && !isBlocked && link.maskMode === 'interstitial' && interstitialCountdown > 0) {
-      const timer = setTimeout(() => {
-        setInterstitialCountdown((prev) => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (isUnlocked && !isBlocked && link.maskMode === 'interstitial') {
+      if (interstitialCountdown > 0) {
+        const timer = setTimeout(() => {
+          setInterstitialCountdown((prev) => prev - 1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else if (interstitialCountdown === 0) {
+        window.location.replace(link.cleanedUrl);
+      }
     }
-  }, [isUnlocked, isBlocked, link.maskMode, interstitialCountdown]);
+  }, [isUnlocked, isBlocked, link.maskMode, interstitialCountdown, link.cleanedUrl]);
 
   // Handle direct mode redirect
   useEffect(() => {
