@@ -209,29 +209,18 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                ⚡ Path Direct Ultra Short (siberes-ngk)
-              </button>
-              <button
-                type="button"
-                onClick={() => setUrlFormat('hash_ultra_short')}
-                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
-                  urlFormat === 'hash_ultra_short'
-                    ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
-                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                🚀 Hash Short (#/siberes-ngk)
+                ⚡ Hash Short Direct (bebas 404)
               </button>
               <button
                 type="button"
                 onClick={() => setUrlFormat('domain_short')}
                 className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors ${
                   urlFormat === 'domain_short'
-                    ? 'bg-slate-800 border-slate-600 text-white font-bold'
+                    ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                🌐 Domain Virtual Format
+                🌐 Domain Virtual Format (siberes.com)
               </button>
               <button
                 type="button"
@@ -242,7 +231,7 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
                     : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                🔑 Portabel Standalone
+                🔑 Token Portabel Standalone
               </button>
             </div>
 

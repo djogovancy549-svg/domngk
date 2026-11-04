@@ -5,6 +5,8 @@ const STORAGE_KEY = 'cloakurl_links_v1';
 
 // Preset virtual domains to give users instant professional options without registering anything
 export const PRESET_VIRTUAL_DOMAINS: PresavedDomainOption[] = [
+  { domain: 'siberes.com', category: 'Layanan Publik & Retribusi' },
+  { domain: 'siberes-ngk.net', category: 'Portal Daerah' },
   { domain: 'secure-vault.internal', category: 'Enterprise Security' },
   { domain: 'cloud-drive.docs-share.io', category: 'Dokumen & Cloud' },
   { domain: 'portal.company-portal.net', category: 'Korporat' },
@@ -38,7 +40,7 @@ export async function getInitialLinks(): Promise<CloakedLink[]> {
         title: 'Laporan Finansial Kuartal 1 - Internal Only',
         originalUrl: sample1Url,
         cleanedUrl: sample1Audit.originalCleanUrl,
-        virtualDomain: 'secure-vault.internal',
+        virtualDomain: 'siberes.com',
         slug: 'q1-financial-audit-2026',
         maskMode: 'sandbox',
         pinProtection: {
@@ -79,7 +81,7 @@ export async function getInitialLinks(): Promise<CloakedLink[]> {
         title: 'Panduan Zero-Trust Architecture & Cloaking',
         originalUrl: sample2Url,
         cleanedUrl: sample2Audit.originalCleanUrl,
-        virtualDomain: 'safe-gateway.zero-trust.org',
+        virtualDomain: 'siberes-ngk.net',
         slug: 'cybersec-architecture',
         maskMode: 'interstitial',
         pinProtection: {
@@ -291,7 +293,7 @@ export function setCustomBaseOrigin(host: string): void {
  * Returns the public shared origin.
  * Automatically adapts to:
  * 1. Custom domain / Cloudflare Pages domain if configured
- * 2. Active Cloudflare Pages origin (e.g. https://my-app.pages.dev)
+        * 2. Active Cloudflare Pages origin (e.g. https://my-app.pages.dev)
  * 3. Or Google AI Studio preview origin (ais-pre-...)
  */
 export function getPublicAppOrigin(): string {
@@ -312,8 +314,7 @@ export function getDevAppOrigin(): string {
 export type LinkUrlFormat = 'path_ultra_short' | 'hash_ultra_short' | 'domain_short' | 'portable';
 
 /**
- * Builds the real shareable app link.
- * Defaults to ultra-short direct path URLs (e.g. https://domain.workers.dev/siberes-ngk)
+ * Builds the real shareable app link with guaranteed zero 404 error fallback.
  */
 export function buildShareableUrl(
   link: CloakedLink, 
@@ -322,22 +323,24 @@ export function buildShareableUrl(
 ): string {
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const cleanSlug = encodeURIComponent(link.slug);
+  const cleanDomain = encodeURIComponent(link.virtualDomain);
+  const cleanUrl = encodeURIComponent(link.cleanedUrl);
 
   if (format === 'path_ultra_short') {
-    return `${baseOrigin}/${cleanSlug}`;
+    return `${baseOrigin}/#/${cleanSlug}?u=${cleanUrl}`;
   }
 
   if (format === 'hash_ultra_short') {
-    return `${baseOrigin}/#/${cleanSlug}`;
+    return `${baseOrigin}/#/${cleanSlug}?u=${cleanUrl}`;
   }
 
   if (format === 'portable') {
     const token = encodeLinkToToken(link);
-    return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}?p=${token}`;
+    return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?p=${token}`;
   }
 
-  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug)
-  return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}`;
+  // Default: domain_short (Clean domain format: https://.../#/v/domain/slug?u=...)
+  return `${baseOrigin}/#/v/${cleanDomain}/${cleanSlug}?u=${cleanUrl}`;
 }
 
 /**
