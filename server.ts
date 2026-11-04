@@ -14,8 +14,8 @@ app.use(express.json({ limit: '10mb' }));
 const linksStore = new Map<string, any>();
 
 // Seed initial sample link keys
-const sample1Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
-const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model';
+const sample1Url = 'https://wikipedia.org/wiki/Zero-trust_security_model';
+const sample2Url = 'https://wikipedia.org/wiki/Cybersecurity';
 
 const initialSamples = [
   {

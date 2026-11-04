@@ -25,7 +25,7 @@ import {
   Globe
 } from 'lucide-react';
 import { CloakedLink } from '../types';
-import { hashPin, isKnownFrameRestrictedDomain } from '../utils/security';
+import { hashPin, isKnownFrameRestrictedDomain, formatUrlForFrameEmbed } from '../utils/security';
 import { buildVirtualDisplayUrl } from '../utils/storage';
 
 interface VirtualGatewayViewerProps {
@@ -679,7 +679,7 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
           <iframe
             key={iframeKey}
             ref={iframeRef}
-            src={link.cleanedUrl}
+            src={formatUrlForFrameEmbed(link.cleanedUrl)}
             title={link.title}
             className="w-full h-full flex-1 border-0"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"

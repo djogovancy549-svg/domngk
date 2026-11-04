@@ -254,7 +254,7 @@ export default function App() {
     if (!targetLink && searchedSlug) {
       const fallbackTarget = urlFromQuery
         ? decodeURIComponent(urlFromQuery)
-        : 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
+        : 'https://wikipedia.org/wiki/Zero-trust_security_model';
 
       targetLink = {
         id: `clk_dyn_${searchedSlug}_${Date.now().toString(36)}`,

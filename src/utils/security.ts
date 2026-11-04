@@ -234,6 +234,65 @@ export function isKnownFrameRestrictedDomain(url: string): { isRestricted: boole
 }
 
 /**
+ * Transforms Google Workspace & common web document URLs into frame-embeddable formats
+ * (e.g. converts /edit to /preview or /pub?embedded=true to prevent Google X-Frame-Options blocks)
+ */
+export function formatUrlForFrameEmbed(rawUrl: string): string {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim();
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+
+    // 1. Google Docs (/document/d/ID/edit -> /document/d/ID/preview)
+    if (host.includes('docs.google.com') && parsed.pathname.includes('/document/d/')) {
+      const match = parsed.pathname.match(/\/document\/d\/([^\/]+)/);
+      if (match && match[1]) {
+        return `https://docs.google.com/document/d/${match[1]}/preview`;
+      }
+    }
+
+    // 2. Google Spreadsheets (/spreadsheets/d/ID/edit -> /spreadsheets/d/ID/preview)
+    if (host.includes('docs.google.com') && parsed.pathname.includes('/spreadsheets/d/')) {
+      const match = parsed.pathname.match(/\/spreadsheets\/d\/([^\/]+)/);
+      if (match && match[1]) {
+        return `https://docs.google.com/spreadsheets/d/${match[1]}/preview`;
+      }
+    }
+
+    // 3. Google Drive File View (/file/d/ID/view -> /file/d/ID/preview)
+    if (host.includes('drive.google.com') && parsed.pathname.includes('/file/d/')) {
+      const match = parsed.pathname.match(/\/file\/d\/([^\/]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/file/d/${match[1]}/preview`;
+      }
+    }
+
+    // 4. Google Slides (/presentation/d/ID/edit -> /presentation/d/ID/embed)
+    if (host.includes('docs.google.com') && parsed.pathname.includes('/presentation/d/')) {
+      const match = parsed.pathname.match(/\/presentation\/d\/([^\/]+)/);
+      if (match && match[1]) {
+        return `https://docs.google.com/presentation/d/${match[1]}/embed`;
+      }
+    }
+
+    // 5. Google Forms (/forms/d/e/ID/viewform -> /forms/d/e/ID/viewform?embedded=true)
+    if (host.includes('docs.google.com') && parsed.pathname.includes('/forms/')) {
+      if (!parsed.searchParams.has('embedded')) {
+        parsed.searchParams.set('embedded', 'true');
+      }
+      return parsed.toString();
+    }
+  } catch {}
+
+  return url;
+}
+
+/**
  * Simple client-side pseudo-hash for PIN verification (avoids storing plaintext PIN)
  */
 export async function hashPin(pin: string): Promise<string> {

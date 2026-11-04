@@ -29,12 +29,12 @@ export async function getInitialLinks(): Promise<CloakedLink[]> {
 
   if (localLinks.length === 0) {
     const sample1Pin = await hashPin('1234');
-    const sample1Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing&utm_source=slack&utm_medium=channel_link';
+    const sample1Url = 'https://wikipedia.org/wiki/Zero-trust_security_model?utm_source=slack&utm_medium=channel_link';
     const sample1Audit = auditUrlSecurity(sample1Url);
-    const sample2Url = 'https://wikipedia.org/wiki/Zero-trust_security_model?fbclid=IwAR3XYZ123456789&utm_campaign=cybersec_whitepaper';
+    const sample2Url = 'https://wikipedia.org/wiki/Cybersecurity?fbclid=IwAR3XYZ123456789&utm_campaign=cybersec_whitepaper';
     const sample2Audit = auditUrlSecurity(sample2Url);
 
-    const sample3Url = 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
+    const sample3Url = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
     const sample3Audit = auditUrlSecurity(sample3Url);
 
     localLinks = [
