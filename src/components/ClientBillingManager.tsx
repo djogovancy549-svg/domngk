@@ -164,6 +164,27 @@ export const ClientBillingManager: React.FC<ClientBillingManagerProps> = ({
         </div>
       </div>
 
+      {/* Account Bank BRI Destination Banner */}
+      <div className="p-4 bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40 border border-blue-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+            <CreditCard className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <div className="font-semibold text-white flex items-center gap-2">
+              <span>Rekening Tujuan Pembayaran Resmi</span>
+              <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono text-[10px] uppercase border border-blue-500/30">Bank BRI</span>
+            </div>
+            <div className="text-slate-300 font-mono mt-0.5">
+              No. Rekening: <strong className="text-white text-sm">4625-01-020206-53-7</strong> · Atas Nama: <strong className="text-emerald-400">Yanti Yesinta Nenu D. W Nggodji</strong>
+            </div>
+          </div>
+        </div>
+        <div className="text-[11px] text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0">
+          Semua tagihan WA otomatis tercantum rekening BRI ini
+        </div>
+      </div>
+
       {/* Main Controls: Search & Sub Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">

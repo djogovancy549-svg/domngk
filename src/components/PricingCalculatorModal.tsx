@@ -226,6 +226,23 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Official Bank Account Information */}
+          <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+            <span className="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">
+              Informasi Rekening Tujuan Pembayaran Resmi:
+            </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-slate-900 border border-slate-800 rounded-lg">
+              <div className="space-y-0.5">
+                <div className="font-semibold text-white">Bank BRI (Bank Rakyat Indonesia)</div>
+                <div className="font-mono text-emerald-400 text-sm font-bold">4625-01-020206-53-7</div>
+                <div className="text-slate-400 text-[11px]">Atas Nama: <strong className="text-slate-200">Yanti Yesinta Nenu D. W Nggodji</strong></div>
+              </div>
+              <div className="text-[11px] text-slate-400 bg-slate-950 px-3 py-2 rounded border border-slate-800 max-w-xs">
+                Pembayaran paket dilakukan dengan transfer ke nomor rekening BRI di atas. Konfirmasi otomatis terkirim via WhatsApp.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

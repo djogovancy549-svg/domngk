@@ -100,7 +100,7 @@ export interface InvoiceRecord {
   dueDate: number;
   paidDate: number | null;
   status: 'paid' | 'unpaid';
-  paymentMethod?: 'QRIS' | 'Transfer Bank BCA' | 'Transfer Bank Mandiri' | 'GoPay/OVO' | 'Tunai';
+  paymentMethod?: 'QRIS' | 'Transfer Bank BRI' | 'Transfer Bank BRI (4625-01-020206-53-7)' | 'Transfer Bank BCA' | 'Transfer Bank Mandiri' | 'GoPay/OVO' | 'Tunai';
 }
 
 export interface GoogleSyncMetadata {

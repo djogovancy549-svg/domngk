@@ -136,6 +136,20 @@ export const LinkDetailsModal: React.FC<LinkDetailsModalProps> = ({
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Buka Tautan (Uji Coba)</span>
             </button>
+
+            <button
+              onClick={() => {
+                if (window.confirm(`Yakin ingin menghapus tautan "${link.title}" secara permanen?`)) {
+                  onDeleteLink(link.id);
+                  onClose();
+                }
+              }}
+              className="px-3 py-1.5 bg-red-950/50 hover:bg-red-900/60 border border-red-800/80 text-red-300 rounded-lg text-xs font-semibold shadow transition-colors flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Hapus Tautan</span>
+            </button>
+
             <button
               onClick={onClose}
               className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"

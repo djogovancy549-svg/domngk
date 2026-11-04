@@ -338,6 +338,19 @@ export const LinksTable: React.FC<LinksTableProps> = ({
                           >
                             <QrCode className="w-3.5 h-3.5" />
                           </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`Yakin ingin menghapus tautan "${link.title}" secara permanen?`)) {
+                                onDeleteLink(link.id);
+                              }
+                            }}
+                            title="Hapus Tautan Permanen"
+                            className="p-1.5 text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-900/40 border border-red-800/50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -98,7 +98,7 @@ export function getInitialInvoices(): InvoiceRecord[] {
       dueDate: now + 5 * 24 * 60 * 60 * 1000,
       paidDate: null,
       status: 'unpaid',
-      paymentMethod: 'Transfer Bank BCA',
+      paymentMethod: 'Transfer Bank BRI (4625-01-020206-53-7)',
     },
     {
       id: 'inv_1002',
@@ -112,7 +112,7 @@ export function getInitialInvoices(): InvoiceRecord[] {
       dueDate: now - 2 * 24 * 60 * 60 * 1000,
       paidDate: null,
       status: 'unpaid',
-      paymentMethod: 'QRIS',
+      paymentMethod: 'Transfer Bank BRI (4625-01-020206-53-7)',
     },
     {
       id: 'inv_1000',
@@ -126,7 +126,7 @@ export function getInitialInvoices(): InvoiceRecord[] {
       dueDate: now - 15 * 24 * 60 * 60 * 1000,
       paidDate: now - 15 * 24 * 60 * 60 * 1000,
       status: 'paid',
-      paymentMethod: 'QRIS',
+      paymentMethod: 'Transfer Bank BRI (4625-01-020206-53-7)',
     },
   ];
 
@@ -166,7 +166,7 @@ export function buildWhatsappInvoiceLink(invoice: InvoiceRecord): string {
   const cleanPhone = invoice.phoneWhatsapp.replace(/[^0-9]/g, '');
   const targetPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
   
-  const text = `Halo Bapak/Ibu ${invoice.clientName} (${invoice.businessName}),%0A%0ABerikut adalah rincian tagihan langganan Tautan Domain Virtual CloakURL Anda:%0A• No. Invoice: *${invoice.invoiceNumber}*%0A• Periode: *${invoice.periodLabel}*%0A• Total Tagihan: *Rp ${invoice.amount.toLocaleString('id-ID')}*%0A• Jatuh Tempo: *${new Date(invoice.dueDate).toLocaleDateString('id-ID')}*%0A%0AMetode Pembayaran:%0A- Transfer BCA: 1234-567-890 a.n. CloakURL Bisnis%0A- QRIS: Semua E-Wallet (Gopay/OVO/Dana)%0A%0ASilakan kirimkan bukti transfer setelah pembayaran berhasil. Terima kasih! 🙏`;
+  const text = `Halo Bapak/Ibu ${invoice.clientName} (${invoice.businessName}),%0A%0ABerikut adalah rincian tagihan langganan Tautan Domain Virtual CloakURL Anda:%0A• No. Invoice: *${invoice.invoiceNumber}*%0A• Periode: *${invoice.periodLabel}*%0A• Total Tagihan: *Rp ${invoice.amount.toLocaleString('id-ID')}*%0A• Jatuh Tempo: *${new Date(invoice.dueDate).toLocaleDateString('id-ID')}*%0A%0AMetode Pembayaran Transfer Bank:%0A• Bank: *BRI*%0A• No. Rekening: *4625-01-020206-53-7*%0A• Atas Nama: *Yanti Yesinta Nenu D. W Nggodji*%0A%0ASilakan kirimkan bukti transfer setelah pembayaran berhasil. Terima kasih! 🙏`;
 
   return `https://wa.me/${targetPhone}?text=${text}`;
 }

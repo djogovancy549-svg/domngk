@@ -16,7 +16,13 @@ import {
   ShieldAlert, 
   Flame, 
   Fingerprint,
-  Info
+  Info,
+  FileText,
+  CheckCircle2,
+  ArrowRight,
+  Shield,
+  X,
+  Globe
 } from 'lucide-react';
 import { CloakedLink } from '../types';
 import { hashPin, isKnownFrameRestrictedDomain } from '../utils/security';
@@ -34,6 +40,8 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
   onLinkUpdated,
 }) => {
   // Security gate states
+  const [hasAcceptedCover, setHasAcceptedCover] = useState(false);
+  const [showFullTermsModal, setShowFullTermsModal] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(!link.pinProtection?.enabled);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
@@ -69,7 +77,7 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
 
   // Handle Interstitial auto-redirect countdown
   useEffect(() => {
-    if (isUnlocked && !isBlocked && link.maskMode === 'interstitial') {
+    if (hasAcceptedCover && isUnlocked && !isBlocked && link.maskMode === 'interstitial') {
       if (interstitialCountdown > 0) {
         const timer = setTimeout(() => {
           setInterstitialCountdown((prev) => prev - 1);
@@ -79,14 +87,14 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
         window.location.replace(link.cleanedUrl);
       }
     }
-  }, [isUnlocked, isBlocked, link.maskMode, interstitialCountdown, link.cleanedUrl]);
+  }, [hasAcceptedCover, isUnlocked, isBlocked, link.maskMode, interstitialCountdown, link.cleanedUrl]);
 
   // Handle direct mode redirect
   useEffect(() => {
-    if (isUnlocked && !isBlocked && link.maskMode === 'direct') {
+    if (hasAcceptedCover && isUnlocked && !isBlocked && link.maskMode === 'direct') {
       window.location.replace(link.cleanedUrl);
     }
-  }, [isUnlocked, isBlocked, link.maskMode, link.cleanedUrl]);
+  }, [hasAcceptedCover, isUnlocked, isBlocked, link.maskMode, link.cleanedUrl]);
 
   // Check known frame restricted domains (e.g. google.com, youtube.com)
   const restrictionInfo = isKnownFrameRestrictedDomain(link.cleanedUrl);
@@ -208,6 +216,169 @@ export const VirtualGatewayViewer: React.FC<VirtualGatewayViewerProps> = ({
             <span>Kembali ke Dasbor CloakURL</span>
           </button>
         </div>
+      </div>
+    );
+  }
+
+  // 0. COVER SAMPUL LANDING PAGE (Syarat & Ketentuan Layanan dengan Latar Belakang Cover)
+  if (!hasAcceptedCover) {
+    return (
+      <div className="min-h-screen bg-slate-950 relative flex flex-col justify-between overflow-x-hidden font-sans text-slate-100">
+        {/* Latar Belakang Sampul Visual Ambient dengan Mesh Gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950 pointer-events-none z-0" />
+        <div 
+          className="absolute inset-0 opacity-15 bg-cover bg-center pointer-events-none z-0 mix-blend-overlay"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop')`,
+          }}
+        />
+
+        {/* Header Bar */}
+        <header className="relative z-10 w-full max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-white tracking-wide block">Tautan Penyamar Terverifikasi</span>
+              <span className="text-[10px] font-mono text-emerald-400 block">{virtualUrl}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={onBackToDashboard}
+            className="text-xs font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 transition-colors flex items-center gap-1.5"
+            title="Akses khusus administrator sistem"
+          >
+            <span>Masuk Dasbor Admin</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </header>
+
+        {/* Hero Cover Card */}
+        <main className="relative z-10 max-w-xl w-full mx-auto my-auto p-4 sm:p-6">
+          <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            {/* Top decorative badge */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                  Landing Page Portal Akses Resmi
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                Akses Langsung Tanpa Login
+              </span>
+            </div>
+
+            {/* Title & Description */}
+            <div className="space-y-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                {link.title}
+              </h1>
+              <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-emerald-300 flex items-center gap-2 truncate">
+                <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">{virtualUrl}</span>
+              </div>
+            </div>
+
+            {/* Syarat & Ketentuan Layanan Box */}
+            <div className="p-4 bg-slate-950/90 border border-slate-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-white">
+                  <FileText className="w-4 h-4 text-indigo-400" />
+                  <span>Syarat & Ketentuan Layanan Akses</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFullTermsModal(true)}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 underline"
+                >
+                  Baca Selengkapnya
+                </button>
+              </div>
+
+              <div className="space-y-2 text-xs text-slate-300">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span><strong>Perlindungan Privasi:</strong> Sesi Anda dilindungi dengan enkripsi SSL 256-bit dan pelacak iklan (UTM) otomatis dinetralkan.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span><strong>Akses Langsung Bebas Akun:</strong> Pengunjung publik dapat membuka materi tujuan tanpa memerlukan pendaftaran akun atau masuk ke aplikasi admin.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span><strong>Ketentuan Penggunaan:</strong> Pengunjung wajib mematuhi ketentuan akses materi secara sah sesuai peruntukan pemilik tautan.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Action Button */}
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={() => setHasAcceptedCover(true)}
+                className="w-full py-3.5 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-sm font-bold text-white rounded-xl shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 group"
+              >
+                <span>Setuju & Buka Tautan Tujuan</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <p className="text-[11px] text-slate-400 text-center">
+                Dengan menekan tombol di atas, Anda menyetujui syarat & ketentuan akses layanan.
+              </p>
+            </div>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="relative z-10 w-full max-w-5xl mx-auto px-4 py-4 text-center text-xs text-slate-500">
+          <span>CloakURL Gateway & Virtual Domain Protection Engine</span>
+        </footer>
+
+        {/* Terms Modal */}
+        {showFullTermsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+            <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl text-xs text-slate-300">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 className="text-sm font-bold text-white">Syarat & Ketentuan Layanan Lengkap</h3>
+                <button
+                  onClick={() => setShowFullTermsModal(false)}
+                  className="p-1 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-80 overflow-y-auto leading-relaxed pr-1">
+                <p>
+                  <strong>1. Hak Akses & Privasi:</strong> Layanan CloakURL menyediakan gateway pengantar tautan yang memprivatisasi domain asli. Seluruh lalu lintas disaring dari skrip pelacak.
+                </p>
+                <p>
+                  <strong>2. Tanpa Kebutuhan Pendaftaran:</strong> Pengunjung publik tidak perlu membuat akun atau masuk ke dalam aplikasi dasbor manajemen untuk melihat konten tujuan.
+                </p>
+                <p>
+                  <strong>3. Tanggung Jawab Hak Cipta:</strong> Konten dan isi materi tautan tujuan merupakan tanggung jawab sepenuhnya dari pemilik tautan asli.
+                </p>
+                <p>
+                  <strong>4. Keamanan Sistem:</strong> Setiap tindakan otomatisasi malware atau penyalahgunaan lalu lintas dapat diblokir secara otomatis oleh firewall zero-trust.
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 text-right">
+                <button
+                  onClick={() => {
+                    setShowFullTermsModal(false);
+                    setHasAcceptedCover(true);
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow"
+                >
+                  Saya Mengerti & Setuju
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
