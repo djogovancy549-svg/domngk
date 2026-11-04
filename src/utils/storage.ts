@@ -322,13 +322,14 @@ export function buildShareableUrl(
 ): string {
   const baseOrigin = useDevOrigin ? getDevAppOrigin() : getPublicAppOrigin();
   const cleanSlug = encodeURIComponent(link.slug);
+  const targetParam = `u=${encodeURIComponent(link.cleanedUrl)}`;
 
   if (format === 'path_ultra_short') {
-    return `${baseOrigin}/${cleanSlug}`;
+    return `${baseOrigin}/${cleanSlug}?${targetParam}`;
   }
 
   if (format === 'hash_ultra_short') {
-    return `${baseOrigin}/#/${cleanSlug}`;
+    return `${baseOrigin}/#/${cleanSlug}?${targetParam}`;
   }
 
   if (format === 'portable') {
@@ -337,7 +338,7 @@ export function buildShareableUrl(
   }
 
   // Default: domain_short (Clean domain format: https://.../#/v/domain/slug)
-  return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}`;
+  return `${baseOrigin}/#/v/${encodeURIComponent(link.virtualDomain)}/${cleanSlug}?${targetParam}`;
 }
 
 /**

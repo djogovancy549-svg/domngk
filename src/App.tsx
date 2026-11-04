@@ -18,7 +18,8 @@ import {
   Flame,
   ArrowRight,
   TrendingUp,
-  FileSpreadsheet
+  FileSpreadsheet,
+  AlertTriangle
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { CloakedLink } from './types';
@@ -64,6 +65,7 @@ export default function App() {
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedLinkForDetails, setSelectedLinkForDetails] = useState<CloakedLink | null>(null);
   const [activeGatewayLink, setActiveGatewayLink] = useState<CloakedLink | null>(null);
+  const [unresolvedSlug, setUnresolvedSlug] = useState<string>('');
   const [prefilledAuditUrl, setPrefilledAuditUrl] = useState('');
 
   // 1. Initialize data from storage & listen for Google Auth
@@ -230,7 +232,12 @@ export default function App() {
     }
 
     if (targetLink) {
+      setUnresolvedSlug('');
       setActiveGatewayLink(targetLink);
+    } else if (searchedSlug && !targetLink) {
+      setUnresolvedSlug(searchedSlug);
+    } else {
+      setUnresolvedSlug('');
     }
   };
 
@@ -389,6 +396,37 @@ export default function App() {
         onBackToDashboard={handleExitGateway}
         onLinkUpdated={handleUpdateLink}
       />
+    );
+  }
+
+  // If a slug route was accessed on a new device without link payload parameter
+  if (unresolvedSlug && !activeGatewayLink) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans text-slate-100">
+        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-5 shadow-2xl">
+          <div className="w-14 h-14 mx-auto rounded-full bg-amber-950/60 border border-amber-800/80 flex items-center justify-center">
+            <AlertTriangle className="w-7 h-7 text-amber-400" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-white mb-2">Tautan Singkat Membutuhkan Parameter Target</h2>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Tautan <code className="text-amber-300 font-mono bg-slate-950 px-1.5 py-0.5 rounded">/{unresolvedSlug}</code> dibuka di perangkat baru tanpa parameter target. Pastikan menggunakan <strong>Tautan Aktif Resmi</strong> yang disalin dari modal rincian dasbor.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              setUnresolvedSlug('');
+              window.location.hash = '';
+              window.history.pushState({}, '', '/');
+            }}
+            className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <span>Buka Dasbor CloakURL</span>
+          </button>
+        </div>
+      </div>
     );
   }
 
